@@ -21,13 +21,17 @@ describe('cli', () => {
     const help = toHelp(cli('hypergraph').toCommand())
     expect(trim(help)).toEqual(
       trim(`
-        hypergraph
+        hypergraph   [--help]
+
+        OPTIONS
+
+        --help    Show help
       `),
     )
   })
 
   test('should generate a simple cli with help', () => {
-    const help = toHelp(cli('hypergraph').help().toCommand())
+    const help = toHelp(cli('hypergraph').toCommand())
     expect(trim(help)).toEqual(
       trim(`
         hypergraph   [--help]
@@ -45,7 +49,6 @@ describe('cli', () => {
         .option(input('service-name').description('Name of the service').string())
         .option(input('instances').description('Number of instances').number())
         .option(input('dry-run').description('Do not make changes but run in dry-run mode'))
-        .help()
         .toCommand(),
     )
     expect(trim(help)).toEqual(
@@ -66,16 +69,16 @@ describe('cli', () => {
   })
 
   test('should generate a simple cli with version and help', () => {
-    const help = toHelp(cli('hypergraph').version('1.0.0').help().toCommand())
+    const help = toHelp(cli('hypergraph').version('1.0.0').toCommand())
     expect(trim(help)).toEqual(
       trim(`
-        hypergraph   [--version] [--help]
+        hypergraph   [--help] [--version]
 
         OPTIONS
 
-        --version   Show version
-
         --help      Show help
+
+        --version   Show version
       `),
     )
   })
@@ -88,12 +91,11 @@ describe('cli', () => {
         .argument(input('service').description('Name of the target service'))
         .argument(input('instances').description('Number of instances').number())
         .argument(input('event').description('Event to be attached'))
-        .help()
         .toCommand(),
     )
     expect(trim(help)).toEqual(
       trim(`
-        hypergraph   <name> [service] [instances] [event] [--version] [--help]
+        hypergraph   <name> [service] [instances] [event] [--help] [--version]
 
         ARGUMENTS
 
@@ -107,9 +109,9 @@ describe('cli', () => {
 
         OPTIONS
 
-        --version   Show version
-
         --help      Show help
+
+        --version   Show version
       `),
     )
   })
@@ -122,12 +124,11 @@ describe('cli', () => {
         .command(command('generate').description('Generate data hooks'))
         .command(command('index').description('Create database index'))
         .option(input('dry-run').description('Do a sample run'))
-        .help()
         .toCommand(),
     )
     expect(trim(help)).toEqual(
       trim(`
-        hypergraph   <create|generate|index> [--dry-run] [--version] [--help]
+        hypergraph   <create|generate|index> [--dry-run] [--help] [--version]
 
         COMMANDS
 
@@ -141,9 +142,9 @@ describe('cli', () => {
 
         --dry-run   Do a sample run
 
-        --version   Show version
-
         --help      Show help
+
+        --version   Show version
       `),
     )
   })

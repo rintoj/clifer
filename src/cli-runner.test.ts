@@ -16,14 +16,14 @@ jest.mock('chalk', () => ({
 describe('cli', () => {
   test('should run a simple cli', async () => {
     const run = jest.fn()
-    await runCli(cli('hypergraph').version('1.0').help().handle(run), [])
+    await runCli(cli('hypergraph').version('1.0').handle(run), [])
     expect(run).toHaveBeenCalledWith({})
   })
 
   test('should show the version', async () => {
     const run = jest.fn()
     console.log = jest.fn()
-    await runCli(cli('hypergraph').version('1.0').help().handle(run), ['--version'])
+    await runCli(cli('hypergraph').version('1.0').handle(run), ['--version'])
     expect(run).not.toHaveBeenCalled()
     expect(console.log).toHaveBeenCalledWith('1.0')
   })
@@ -35,7 +35,6 @@ describe('cli', () => {
         .version('1.0')
         .option(input('dry-run'))
         .option(input('service').string())
-        .help()
         .handle(run),
       ['--dry-run', '--service=cdn'],
     )
@@ -49,7 +48,6 @@ describe('cli', () => {
         .version('1.0')
         .option(input('dry-run'))
         .option(input('service').string())
-        .help()
         .handle(run),
       ['--dry-run', '--service', 'cdn'],
     )
@@ -63,7 +61,6 @@ describe('cli', () => {
         .version('1.0')
         .option(input('dry-run'))
         .option(input('service').string())
-        .help()
         .handle(run),
       ['--dry-run=true'],
     )
@@ -78,7 +75,6 @@ describe('cli', () => {
           .version('1.0')
           .option(input('dry-run'))
           .option(input('service').string())
-          .help()
           .handle(run),
         ['--dry-run', '--service'],
       ),
@@ -93,7 +89,6 @@ describe('cli', () => {
           .version('1.0')
           .option(input('dry-run'))
           .option(input('instances').number())
-          .help()
           .handle(run),
         ['--dry-run', '--instances', 'x'],
       ),
@@ -108,7 +103,6 @@ describe('cli', () => {
           .version('1.0')
           .option(input('dry-run'))
           .option(input('service').string())
-          .help()
           .handle(run),
         ['--service', '--dry-run'],
       ),
@@ -123,7 +117,6 @@ describe('cli', () => {
           .version('1.0')
           .option(input('dry-run'))
           .option(input('service').string())
-          .help()
           .handle(run),
         ['--service='],
       ),
@@ -138,7 +131,6 @@ describe('cli', () => {
           .version('1.0')
           .option(input('dry-run'))
           .option(input('service').string().required())
-          .help()
           .handle(run),
         [],
       ),
@@ -153,7 +145,6 @@ describe('cli', () => {
           .version('1.0')
           .option(input('dry-run'))
           .option(input('service').string())
-          .help()
           .handle(run),
         ['just-an-argument'],
       ),
@@ -168,7 +159,6 @@ describe('cli', () => {
           .version('1.0')
           .option(input('dry-run'))
           .option(input('service').string())
-          .help()
           .handle(run),
         ['--just-an-option'],
       ),
@@ -182,7 +172,6 @@ describe('cli', () => {
         cli('hypergraph')
           .version('1.0')
           .option(input('type').string().options(['string', 'number']).toInput())
-          .help()
           .handle(run),
         ['--type=boolean'],
       ),
@@ -236,14 +225,13 @@ describe('cli', () => {
       cli('hypergraph')
         .version('1.0')
         .argument(input('command').description('show a command').toInput())
-        .help()
         .handle(run),
       ['--help'],
     )
     expect(run).not.toHaveBeenCalled()
     expect(trim(help)).toEqual(
       trim(`
-      hypergraph   [command] [--version] [--help]
+      hypergraph   [command] [--help] [--version]
 
       ARGUMENTS
 
@@ -251,9 +239,9 @@ describe('cli', () => {
 
       OPTIONS
 
-      --version   Show version
-
       --help      Show help
+
+      --version   Show version
     `),
     )
   })
@@ -264,7 +252,6 @@ describe('cli', () => {
     const help = await runCli(
       cli('hypergraph')
         .version('1.0')
-        .help()
         .command(
           command('command')
             .description('show a command')
@@ -281,7 +268,7 @@ describe('cli', () => {
     expect(runInner).not.toHaveBeenCalled()
     expect(trim(help)).toEqual(
       trim(`
-      hypergraph command   [--dry-run] [--sample] [--instances=<number>] [--version] [--help]
+      hypergraph command   [--dry-run] [--sample] [--instances=<number>] [--help] [--version]
 
       OPTIONS
 
@@ -291,9 +278,9 @@ describe('cli', () => {
 
       --instances=<number>   Number of instances
 
-      --version              Show version
-
       --help                 Show help
+
+      --version              Show version
     `),
     )
   })

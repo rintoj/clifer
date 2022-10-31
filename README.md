@@ -49,29 +49,7 @@ runCli(program).catch(e => console.error(e))
 
 ## Auto Generated Help
 
-```sh
-$ create-model --version
-1.0
-
-$ create-model --help
-
-create-model   <name> [--service=<string>] [--dry-run] [--version]
-               [--help]
-
-ARGUMENTS
-
-name                 Name of the model
-
-OPTIONS
-
---service=<string>   Name of the service
-
---dry-run            Do a dry run
-
---version            Show version
-
---help               Show help
-```
+![TypeScript](./docs/create-model.jpg)
 
 ## TypeScript Support
 
@@ -120,33 +98,9 @@ const program = cli<Props>('create-model')
   .handle(run)
 
 runCli(program).catch(e => console.error(e))
-
-/*
-$ npx ts-node ./src/example/cli-with-props.ts --help
-
-create-model   <name> [--service=<string>] [--instances=<number>]
-               [--type=<api|subscriber>] [--dry-run] [--version]
-               [--help]
-
-ARGUMENTS
-
-name                      Name of the model
-
-OPTIONS
-
---service=<string>        Name of the service
-
---instances=<number>      Number of instances
-
---type=<api|subscriber>   Type of the model
-
---dry-run                 Do a dry run
-
---version                 Show version
-
---help                    Show help
-/*
 ```
+
+![TypeScript](./docs/type-script.jpg)
 
 ## Commands
 
@@ -215,61 +169,9 @@ const program = cli('builder')
   .option(input('dry-run').description('Execute a sample run'))
 
 runCli(program).catch((e: any) => console.error(e))
-
-/*
-$ npx ts-node ./src/example/command/index.ts --help
-
-builder   <create|index> [--dry-run] [--version] [--help]
-
-COMMANDS
-
-create      Create backend modules
-
-index       Create database index
-
-OPTIONS
-
---dry-run   Execute a sample run
-
---version   Show version
-
---help      Show help
-
-
-$ npx ts-node ./src/example/command/index.ts create --help
-
-builder create   <model|repository|schema> [--version] [--help]
-
-COMMANDS
-
-model        Create a model
-
-repository   Create a repository
-
-schema       Create a schema file
-
-OPTIONS
-
---version    Show version
-
---help       Show help
-
-
-$ npx ts-node ./src/example/command/index.ts create model --help
-
-builder create model   <name> [--type=<ts|js>] [--help]
-
-ARGUMENTS
-
-name             Name of the model
-
-OPTIONS
-
---type=<ts|js>   Type of the model
-
---help           Show help
-*/
 ```
+
+![create](./docs/create.jpg)
 
 ## Automatic Release
 

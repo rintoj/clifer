@@ -3,7 +3,8 @@ import { Command, Input, InputType, isInput, Kind, isCommand } from './cli-types
 
 const SPACER = '   '
 const NEW_LINE = `\n`
-const AVAILABLE_WIDTH = (process?.stdout?.columns ?? 80) - SPACER.length
+const AVAILABLE_WIDTH =
+  typeof jest !== 'undefined' ? 80 : (process?.stdout?.columns ?? 80) - SPACER.length
 
 function extractInputs(command: Command<any>) {
   return Object.values(command.inputs).sort((a, b) => {

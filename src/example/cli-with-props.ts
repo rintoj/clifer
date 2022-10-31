@@ -21,9 +21,6 @@ const program = cli<Props>('create-model')
   // add an option '--version' to the version of the cli
   .version('1.0')
 
-  // add an option '--help' to see help
-  .help()
-
   // add a position input of type string
   .argument(input('name').description('Name of the model').string().required())
 
