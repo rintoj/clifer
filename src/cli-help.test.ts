@@ -50,7 +50,7 @@ describe('cli', () => {
     )
     expect(trim(help)).toEqual(
       trim(`
-        hypergraph   [--service-name] [--instances] [--dry-run] [--help]
+        hypergraph   [--service-name=<string>] [--instances=<number>] [--dry-run] [--help]
 
         OPTIONS
 
@@ -127,7 +127,7 @@ describe('cli', () => {
     )
     expect(trim(help)).toEqual(
       trim(`
-        hypergraph   <create|generate|index> [--version] [--dry-run] [--help]
+        hypergraph   <create|generate|index> [--dry-run] [--version] [--help]
 
         COMMANDS
 
@@ -139,9 +139,9 @@ describe('cli', () => {
 
         OPTIONS
 
-        --version   Show version
-
         --dry-run   Do a sample run
+
+        --version   Show version
 
         --help      Show help
       `),

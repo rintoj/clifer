@@ -20,8 +20,63 @@ npm install clifer
 
 ## Usage
 
-```tsx
-import { runCli, cli, input } from 'clifer'
+```js
+import { cli, input, runCli } from 'clifer'
+
+function run(props) {
+  // handle the action here
+  console.log({ props })
+}
+
+const program = cli('create-model')
+  // add an option '--version' to the version of the cli
+  .version('1.0')
+
+  // add --name=<string>
+  .argument(input('name').description('Name of the model').string().required())
+
+  // add --service=<string>
+  .option(input('service').description('Name of the service').string().required())
+
+  // add --dry-run flag
+  .option(input('dry-run').description('Do a dry run'))
+
+  // handle the command
+  .handle(run)
+
+runCli(program).catch(e => console.error(e))
+```
+
+## Auto Generated Help
+
+```sh
+$ create-model --version
+1.0
+
+$ create-model --help
+
+create-model   <name> [--service=<string>] [--dry-run] [--version]
+               [--help]
+
+ARGUMENTS
+
+name                 Name of the model
+
+OPTIONS
+
+--service=<string>   Name of the service
+
+--dry-run            Do a dry run
+
+--version            Show version
+
+--help               Show help
+```
+
+## TypeScript Support
+
+```ts
+import { cli, input, runCli } from 'clifer'
 
 enum Type {
   api = 'api',
@@ -37,162 +92,184 @@ interface Props {
 
 function run(props: Props) {
   // handle the action here
+  console.log({ props })
 }
 
-void runCli(
-  cli('create-model')
-    // add an option '--version' to the version of the cli
-    .version('1.0')
+const program = cli<Props>('create-model')
+  // add an option '--version' to the version of the cli
+  .version('1.0')
 
-    // add an option '--help' to see help
-    .help()
+  // add a position input of type string
+  .argument(input('name').description('Name of the model').string().required())
 
-    // add a position input of type string
-    .argument(input('name').string().required())
+  // add --service=<string>
+  .option(input('service').description('Name of the service').string().required())
 
-    // add --service=<string>
-    .option(input('service').string().required())
+  // add --instances=<number>
+  .option(input('instances').description('Number of instances').number())
 
-    // add --instances=<number>
-    .option(input('instances').number())
+  // add --type=[api|subscriber]
+  .option(
+    input('type').description('Type of the model').string().options([Type.api, Type.subscriber]),
+  )
 
-    // add --type=[api|subscriber]
-    .option(input('type').string().options(['api', 'subscriber']))
+  // add --dry-run flag
+  .option(input('dry-run').description('Do a dry run'))
 
-    // add --dry-run flag
-    .option(input('dry-run').description('Do a dry run'))
+  // handle the command
+  .handle(run)
 
-    // handle the command
-    .handle(run),
-)
+runCli(program).catch(e => console.error(e))
+
+/*
+$ npx ts-node ./src/example/cli-with-props.ts --help
+
+create-model   <name> [--service=<string>] [--instances=<number>]
+               [--type=<api|subscriber>] [--dry-run] [--version]
+               [--help]
+
+ARGUMENTS
+
+name                      Name of the model
+
+OPTIONS
+
+--service=<string>        Name of the service
+
+--instances=<number>      Number of instances
+
+--type=<api|subscriber>   Type of the model
+
+--dry-run                 Do a dry run
+
+--version                 Show version
+
+--help                    Show help
+/*
 ```
 
-### `useTheme()`
+## Commands
 
-```sh
+```ts
+import { cli, command, input, runCli } from 'clifer'
 
-$ create-model --version
-1.0
-
-$ create-model --help
-
-create-model    <name> <--service=[string]> [--instances=[number] [--type=[api|subscriber]]
-                [--version] [--help] [--dry-run]
-
-      OPTIONS
-
-      --version              Show version
-
-      --help                 Show help
-
-      --dry-run              Do a dry run
-
-      --sample               Sample input
-
-      --instances=<number>   Number of instances
-```
-
-### `useContainerStyle()`
-
-```tsx
-import { ContainerStyleProps, useContainerStyle } from '@native-x/theme'
-
-interface Props extends ContainerStyleProps {
-  ...
+enum Type {
+  ts = 'ts',
+  js = 'js',
 }
 
-function MyComponent({
-  backgroundColor,
-  border,
-  borderBottomColor,
-  borderColor,
-  borderLeftColor,
-  borderRadius,
-  borderRightColor,
-  borderTopColor,
-  opacity,
-  padding,
-}: Props) {
-  const style = useContainerStyle({
-    backgroundColor,
-    border,
-    borderBottomColor,
-    borderColor,
-    borderLeftColor,
-    borderRadius,
-    borderRightColor,
-    borderTopColor,
-    opacity,
-    padding,
+interface CreateCommandProps {
+  name: string
+  type?: Type
+  dryRun?: boolean
+}
+
+const createModel = command<CreateCommandProps>('model')
+  .description('Create a model')
+  .argument(input('name').description('Name of the model').string().required())
+  .option(input('type').description('Type of the model').string().options([Type.ts, Type.js]))
+  .handle((props: CreateCommandProps) => {
+    // handle action
   })
-  return <View style={style}>
-    {...}
-  </View>
+
+const createRepository = command<CreateCommandProps>('repository')
+  .description('Create a repository')
+  .argument(input('name').description('Name of the model').string().required())
+  .option(input('type').description('Type of the model').string().options([Type.ts, Type.js]))
+  .handle((props: CreateCommandProps) => {
+    // handle action
+  })
+
+const createSchema = command<CreateCommandProps>('schema')
+  .description('Create a schema file')
+  .argument(input('name').description('Name of the model').string().required())
+  .option(input('type').description('Type of the model').string().options([Type.ts, Type.js]))
+  .handle((props: CreateCommandProps) => {
+    // handle action
+  })
+
+const createCommand = command('create')
+  .description('Create backend modules')
+  .command(createModel)
+  .command(createRepository)
+  .command(createSchema)
+
+interface IndexCommandProps {
+  name: string
+  publish?: boolean
+  dryRun?: boolean
 }
+
+const indexCommand = command<IndexCommandProps>('index')
+  .description('Create database index')
+  .argument(input('name').description('Name of the file to create').string().required())
+  .option(input('publish').description('Should publish index'))
+  .handle((props: IndexCommandProps) => {
+    // handle action
+  })
+
+const program = cli('builder')
+  .version('1.0')
+  .command(createCommand)
+  .command(indexCommand)
+  .option(input('dry-run').description('Execute a sample run'))
+
+runCli(program).catch((e: any) => console.error(e))
+
+/*
+$ npx ts-node ./src/example/command/index.ts --help
+
+builder   <create|index> [--dry-run] [--version] [--help]
+
+COMMANDS
+
+create      Create backend modules
+
+index       Create database index
+
+OPTIONS
+
+--dry-run   Execute a sample run
+
+--version   Show version
+
+--help      Show help
+
+
+$ npx ts-node ./src/example/command/index.ts create --help
+
+builder create   <model|repository|schema> [--version] [--help]
+
+COMMANDS
+
+model        Create a model
+
+repository   Create a repository
+
+schema       Create a schema file
+
+OPTIONS
+
+--version    Show version
+
+--help       Show help
+
+
+$ npx ts-node ./src/example/command/index.ts create model --help
+
+builder create model   <name> [--type=<ts|js>] [--help]
+
+ARGUMENTS
+
+name             Name of the model
+
+OPTIONS
+
+--type=<ts|js>   Type of the model
+
+--help           Show help
+*/
 ```
-
-You can also extend specific style types:
-
-```tsx
-interface Props extends BackgroundColorStyleProps,
-  BorderColorStyleProps,
-  BorderSizeStyleProps,
-  OpacityStyleProps,
-  ShadowStyleProps,
-  PaddingStyleProps {
-  ...
-}
-```
-
-### `useTextStyle()`
-
-```tsx
-import { TextStyleProps, useTextStyle } from '@native-x/theme'
-
-interface Props extends TextStyleProps {
-  ...
-}
-
-function MyComponent({ fontSize, lineHeight, textColor }: Props) {
-  const style = useTextStyle({ fontSize, lineHeight, textColor })
-  return <Text style={style}>{...}</Text>
-}
-```
-
-Or use individual styles as below
-
-```tsx
-interface Props extends FontSizeStyleProps,
-  LineHeightStyleProps,
-  TextColorStyleProps {
-  ...
-}
-```
-
-### `useShadowStyle()`
-
-```tsx
-import { ShadowProps, useShadowStyle } from '@native-x/theme'
-
-interface Props extends ShadowProps {}
-
-function MyComponent({ shadow, shadowColor }: Props) {
-  const style = useShadowStyle({ shadow, shadowColor })
-  return <Text style={style}>{...}</Text>
-}
-```
-
-### `autoSwitchTheme`
-
-`ThemeProvider` will automatically switch between `dark` and `light` theme depending on system
-appearance. By default this value is set to `false`. Auto theme switching won't work if you don't
-have themes by name `dark` (THEME.DARK) and `light` (THEME.LIGHT).
-
-### `autoSwitchStatusBar`
-
-`ThemeProvider` will automatically switch status bar content to `dark-content` or `light-content`
-depending on system appearance. By default this value is set to `false` and works only when both
-`autoSwitchStatusBar` and `autoSwitchTheme` is set to true.
 
 ## Automatic Release
 

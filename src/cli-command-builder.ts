@@ -10,14 +10,16 @@ export function isCommandBuilder<T>(cmd: CommandOrBuilder<T>): cmd is CommandBui
 }
 
 class CommandBuilderBase<T> {
-  protected cmd: Command<T>
+  cmd: Command<T>
 
   constructor(name: string) {
     this.cmd = {
       kind: Kind.Command,
       name,
       arguments: [],
-      inputs: {},
+      inputs: {
+        help: input('help').description('Show help').toInput(),
+      },
     }
   }
 
@@ -34,13 +36,6 @@ class CommandBuilderBase<T> {
 
   handle(action: (props: T) => void | Promise<any>) {
     this.cmd.handler = action
-    return this
-  }
-
-  help() {
-    if (!this.cmd.inputs['help']) {
-      this.option(input('help').description('Show help'))
-    }
     return this
   }
 

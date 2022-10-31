@@ -1,9 +1,18 @@
-import chalk from 'chalk'
+import { green, yellow, gray } from 'chalk'
 import { Command, Input, InputType, isInput, Kind, isCommand } from './cli-types'
 
 const SPACER = '   '
 const NEW_LINE = `\n`
 const AVAILABLE_WIDTH = (process?.stdout?.columns ?? 80) - SPACER.length
+
+function extractInputs(command: Command<any>) {
+  return Object.values(command.inputs).sort((a, b) => {
+    if (a.name === 'version' || a.name === 'help') return 1
+    if (b.name === 'version' || b.name === 'help') return -1
+    if (a === b) return 0
+    return 1
+  })
+}
 
 function maxNumberOfColumns(...lines: Array<string[]>) {
   return lines.reduce((line, currentLine) => {
@@ -26,7 +35,7 @@ function calculateColumnWidth(noOfColumns: number, ...lines: Array<string[]>) {
 
 function fitToColumn(content: string, widths: number[], index: number) {
   const availableWidth = widths[index]
-  const padding = widths.reduce((a, w, i) => a + (i < index ? w : 0), SPACER.length)
+  const padding = widths.reduce((a, w, i) => a + (i < index ? w : 0), -SPACER.length * 2 - 1)
   const lines = []
   let currentLine = ''
   for (const word of content.split(' ')) {
@@ -71,30 +80,35 @@ function toRequired(content: string, isRequired = true) {
 }
 
 function toInputHelp(input: Command<any> | Input<any>): string[] {
-  return [chalk.yellow(input.name), chalk.gray(input.description ?? '')]
+  return [yellow(input.name), input.description ?? '']
+}
+
+function toOptionType(input: Input<any>): string {
+  if (input.options?.length) {
+    return `=<${input.options?.join('|')}>`
+  }
+  return input.type === InputType.String
+    ? '=<string>'
+    : input.type === InputType.Number
+    ? '=<number>'
+    : ''
 }
 
 function toOptionHelp(input: Input<any>): string[] {
-  const typeInput =
-    input.type === InputType.String
-      ? '=<string>'
-      : input.type === InputType.Number
-      ? '=<number>'
-      : ''
-  return [chalk.yellow(`--${input.name}${typeInput}`), chalk.gray(input.description ?? '')]
+  return [yellow(`--${input.name}${toOptionType(input)}`), input.description ?? '']
 }
 
 function toInputNames(command: Command<any>) {
   const hasInputs = !!Object.values(command.inputs).length
   return hasInputs
-    ? Object.values(command.inputs).map(input => chalk.yellow(`[--${input.name}]`))
+    ? extractInputs(command).map(input => yellow(`[--${input.name}${toOptionType(input)}]`))
     : []
 }
 
 function toInputsHelp(command: Command<any>) {
   const hasInputs = !!Object.values(command.inputs).length
   return hasInputs
-    ? [hasInputs ? ['OPTIONS'] : undefined, ...Object.values(command.inputs).map(toOptionHelp)]
+    ? [hasInputs ? [gray('OPTIONS')] : undefined, ...extractInputs(command).map(toOptionHelp)]
     : []
 }
 
@@ -102,7 +116,7 @@ function toArgumentNames(command: Command<any>) {
   const commandArgs = command.arguments.filter(i => i.kind === Kind.Input) as Input<any>[]
   const hasArguments = !!commandArgs.length
   return hasArguments
-    ? commandArgs.map(input => chalk.yellow(toRequired(input.name, !!input.isRequired)))
+    ? commandArgs.map(input => yellow(toRequired(input.name, !!input.isRequired)))
     : []
 }
 
@@ -110,14 +124,14 @@ function toArgumentsHelp(command: Command<any>) {
   const commandArgs = command.arguments.filter(isInput) as Input<any>[]
   const hasArguments = !!commandArgs.length
   return hasArguments
-    ? [hasArguments ? ['ARGUMENTS'] : undefined, ...commandArgs.map(toInputHelp)]
+    ? [hasArguments ? [gray('ARGUMENTS')] : undefined, ...commandArgs.map(toInputHelp)]
     : []
 }
 
 function toCommandsHelp(command: Command<any>) {
   const commands = command.arguments.filter(isCommand) as Command<any>[]
   const hasCommands = !!commands.length
-  return hasCommands ? [['COMMANDS'], ...commands.map(toInputHelp)] : []
+  return hasCommands ? [[gray('COMMANDS')], ...commands.map(toInputHelp)] : []
 }
 
 function toCommandNames(command: Command<any>) {
@@ -134,10 +148,7 @@ export function toHelp(command: Command<any>, prefix?: string) {
   return formatCommand(
     ...toColumn([
       [
-        joinWithSpace(
-          prefix ? chalk.yellow(prefix) : '',
-          command.name ? chalk.yellow(command.name) : '',
-        ),
+        joinWithSpace(prefix ? green(prefix) : '', command.name ? green(command.name) : ''),
         joinWithSpace(
           commands.length ? toRequired(toCommandNames(command).join('|')) : '',
           args.length ? toArgumentNames(command).join(' ') : '',

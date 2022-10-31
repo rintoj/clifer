@@ -281,19 +281,19 @@ describe('cli', () => {
     expect(runInner).not.toHaveBeenCalled()
     expect(trim(help)).toEqual(
       trim(`
-      hypergraph command   [--version] [--help] [--dry-run] [--sample] [--instances]
+      hypergraph command   [--dry-run] [--sample] [--instances=<number>] [--version] [--help]
 
       OPTIONS
-
-      --version              Show version
-
-      --help                 Show help
 
       --dry-run              Do a dry run
 
       --sample               Sample input
 
       --instances=<number>   Number of instances
+
+      --version              Show version
+
+      --help                 Show help
     `),
     )
   })

@@ -13,11 +13,6 @@ class Cli<T> extends CommandBuilder<T> {
     }
     return this
   }
-
-  help() {
-    super.help()
-    return this
-  }
 }
 
 export function cli<T>(name: string) {
