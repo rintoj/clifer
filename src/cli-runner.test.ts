@@ -41,6 +41,20 @@ describe('cli', () => {
     expect(run).toHaveBeenCalledWith({ dryRun: true, service: 'cdn' })
   })
 
+  test('should parse positional arguments', async () => {
+    const run = jest.fn()
+    await runCli(
+      cli('hypergraph')
+        .version('1.0')
+        .argument(input('name').string())
+        .option(input('dry-run'))
+        .option(input('service').string())
+        .handle(run),
+      ['test'],
+    )
+    expect(run).toHaveBeenCalledWith({ name: 'test' })
+  })
+
   test('should parse value from the position next to option', async () => {
     const run = jest.fn()
     await runCli(
@@ -178,6 +192,30 @@ describe('cli', () => {
     ).rejects.toThrow(
       'Invalid value "boolean" for the input "--type". You must provide "string" or "number"',
     )
+  })
+
+  test('should throw an error if required argument is not provided', async () => {
+    const run = jest.fn()
+    await expect(() =>
+      runCli(
+        cli('hypergraph').version('1.0').argument(input('package').string().required()).handle(run),
+        [],
+      ),
+    ).rejects.toThrow('Missing a required argument "<package>"')
+  })
+
+  test('should throw an error if a second argument is not provided', async () => {
+    const run = jest.fn()
+    await expect(() =>
+      runCli(
+        cli('hypergraph')
+          .version('1.0')
+          .argument(input('package').string().required())
+          .argument(input('name').string().required())
+          .handle(run),
+        ['package1'],
+      ),
+    ).rejects.toThrow('Missing a required argument "<name>"')
   })
 
   test('should parse a command', async () => {

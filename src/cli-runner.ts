@@ -1,7 +1,7 @@
 import { toCamelCase } from 'name-util'
 import { CommandOrBuilder, isCommandBuilder } from './cli-command-builder'
 import { showHelp, toHelp } from './cli-help'
-import { Command, Input, InputType, isCommand } from './cli-types'
+import { Command, Input, InputType, isCommand, isInput } from './cli-types'
 
 function toValues(value: string[]) {
   return [
@@ -88,8 +88,15 @@ function parseCommand<P>(
   if (input) return input
   if (/^--.+/.test(currentArg)) throw new Error(`Invalid option "${currentArg}"`)
   for (const input of command.arguments) {
-    if (isCommand(input) && input.name === currentArg) {
+    if (isCommand(input)) {
       return parseCommand(input, args.slice(1), props, [...commands, command])
+    } else if (isInput(input)) {
+      return parseCommand(
+        command,
+        args.slice(1),
+        { ...props, [toCamelCase(input.name)]: parseValue(currentArg, input) },
+        [...commands, command],
+      )
     }
   }
   throw new Error(`Invalid argument "${currentArg}"`)
@@ -99,6 +106,15 @@ function validateMissingArgs(command: Command<any>, props: any) {
   for (const input of Object.values(command.inputs)) {
     if (input.isRequired && typeof props[toCamelCase(input.name)] === 'undefined') {
       throw new Error(`Missing a required input "--${input.name}"`)
+    }
+  }
+  for (const input of command.arguments) {
+    if (
+      isInput(input) &&
+      input.isRequired &&
+      typeof props[toCamelCase(input.name)] === 'undefined'
+    ) {
+      throw new Error(`Missing a required argument "<${input.name}>"`)
     }
   }
 }
@@ -112,7 +128,7 @@ export async function runCli<T>(
     : commandOrBuilder
 
   if (args.includes('--version')) {
-    return console.log(command.version)
+    return console.log(command.version ?? 'Unknown')
   }
   const [targetCommand, props, commands] = parseCommand<{ help?: boolean }>(command, args)
   if (props.help) {

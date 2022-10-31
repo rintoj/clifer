@@ -1,5 +1,5 @@
 import { input, InputOrBuilder, isInputBuilder } from './cli-input-builder'
-import { Command, InputType, InputValueType, Kind } from './cli-types'
+import { Command, InputType, InputValueType, isInput, Kind } from './cli-types'
 
 export type CommandBuilderType<T> = CommandBuilder<T> | CommandBuilderBase<T>
 
@@ -68,6 +68,12 @@ class CommandBuilderWithArguments<T> extends CommandBuilderBase<T> {
     if (arg.type === InputType.Boolean) {
       arg.type = InputType.String
     }
+    if (arg.isRequired) {
+      for (const currentArg of this.cmd.arguments) {
+        if (isInput(currentArg)) currentArg.isRequired = true
+      }
+    }
+
     this.cmd.arguments.push(arg)
     return this
   }
