@@ -55,6 +55,39 @@ describe('cli', () => {
     expect(run).toHaveBeenCalledWith({ name: 'test' })
   })
 
+  test('should parse multiple positional arguments', async () => {
+    const run = jest.fn()
+    await runCli(
+      cli('hypergraph')
+        .version('1.0')
+        .argument(input('name').string())
+        .argument(input('category').string())
+        .argument(input('type').string())
+        .option(input('dry-run'))
+        .option(input('service').string())
+        .handle(run),
+      ['test', 'category1', 'type1'],
+    )
+    expect(run).toHaveBeenCalledWith({ name: 'test', category: 'category1', type: 'type1' })
+  })
+
+  test('should throw an error if a required argument is missing', async () => {
+    const run = jest.fn()
+    await expect(() =>
+      runCli(
+        cli('hypergraph')
+          .version('1.0')
+          .argument(input('name').string())
+          .argument(input('category').string())
+          .argument(input('type').string().required())
+          .option(input('dry-run'))
+          .option(input('service').string())
+          .handle(run),
+        ['test', 'category1'],
+      ),
+    ).rejects.toThrowError('Missing a required argument "<type>"')
+  })
+
   test('should parse value from the position next to option', async () => {
     const run = jest.fn()
     await runCli(
@@ -230,6 +263,23 @@ describe('cli', () => {
     )
     expect(run).not.toHaveBeenCalled()
     expect(runInner).toHaveBeenCalledWith({})
+  })
+
+  test('should parse a second command', async () => {
+    const run = jest.fn()
+    const runCommand1 = jest.fn()
+    const runCommand2 = jest.fn()
+    await runCli(
+      cli('hypergraph')
+        .version('1.0')
+        .command(command('command1').description('show a command').handle(runCommand1))
+        .command(command('command2').description('show a command').handle(runCommand2))
+        .handle(run),
+      ['command2'],
+    )
+    expect(run).not.toHaveBeenCalled()
+    expect(runCommand1).not.toHaveBeenCalledWith({})
+    expect(runCommand2).toHaveBeenCalledWith({})
   })
 
   test('should parse a command with options', async () => {

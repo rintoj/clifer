@@ -88,16 +88,18 @@ function parseCommand<P>(
   if (input) return input
   if (/^--.+/.test(currentArg)) throw new Error(`Invalid option "${currentArg}"`)
   for (const input of command.arguments) {
-    if (isCommand(input)) {
+    if (isCommand(input) && input.name === currentArg) {
       return parseCommand(input, args.slice(1), props, [...commands, command])
-    } else if (isInput(input)) {
-      return parseCommand(
-        command,
-        args.slice(1),
-        { ...props, [toCamelCase(input.name)]: parseValue(currentArg, input) },
-        [...commands, command],
-      )
     }
+  }
+  const cmdArg = command.arguments[0]
+  if (isInput(cmdArg)) {
+    return parseCommand(
+      { ...command, arguments: command.arguments.slice(1) },
+      args.slice(1),
+      { ...props, [toCamelCase(cmdArg.name)]: parseValue(currentArg, cmdArg) },
+      [...commands, command],
+    )
   }
   throw new Error(`Invalid argument "${currentArg}"`)
 }
