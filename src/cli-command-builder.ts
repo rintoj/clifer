@@ -63,7 +63,7 @@ class CommandBuilderWithArguments<T> extends CommandBuilderBase<T> {
     this.cmd = command
   }
 
-  argument<T extends InputValueType>(inputOrBuilder: InputOrBuilder<T>) {
+  argument<V extends InputValueType>(inputOrBuilder: InputOrBuilder<V>) {
     const arg = isInputBuilder(inputOrBuilder) ? inputOrBuilder.toInput() : inputOrBuilder
     if (arg.type === InputType.Boolean) {
       arg.type = InputType.String
@@ -84,7 +84,7 @@ export class CommandBuilder<T> extends CommandBuilderBase<T> {
     return new CommandBuilderWithInnerCommands(this.cmd).command(inputOrBuilder)
   }
 
-  argument<T extends InputValueType>(inputOrBuilder: InputOrBuilder<T>) {
+  argument<V extends InputValueType>(inputOrBuilder: InputOrBuilder<V>) {
     return new CommandBuilderWithArguments(this.cmd).argument(inputOrBuilder)
   }
 }
