@@ -30,6 +30,11 @@ class BaseInputBuilder<T, V extends InputValueType> {
     return this
   }
 
+  default(defaultValue: V) {
+    this.input.default = defaultValue
+    return this
+  }
+
   prompt(message?: string) {
     this.input.shouldPrompt = true
     this.input.promptMessage = message
@@ -67,16 +72,14 @@ export class InputBuilder<T, V extends InputValueType> extends BaseInputBuilder<
     return new NonBooleanInputBuilder<T, string>({
       ...this.input,
       type: InputType.String,
-      choices: [],
-    })
+    } as any)
   }
 
   number() {
     return new NonBooleanInputBuilder<T, number>({
       ...this.input,
       type: InputType.Number,
-      choices: [],
-    })
+    } as any)
   }
 }
 

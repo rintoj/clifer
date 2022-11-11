@@ -24,6 +24,7 @@ export interface Input<T, V extends InputValueType> {
   name: InputName<T>
   description?: string
   type: InputType
+  default?: V
   choices?: Array<V>
   isRequired?: boolean
   shouldPrompt?: boolean

@@ -1,5 +1,5 @@
 import { input, InputOrBuilder, isInputBuilder } from './cli-input-builder'
-import { Command, InputType, InputValueType, isInput, Kind } from './cli-types'
+import { Command, Input, InputType, InputValueType, isInput, Kind } from './cli-types'
 
 export type CommandBuilderType<T> = CommandBuilder<T> | CommandBuilderBase<T>
 
@@ -7,6 +7,10 @@ export type CommandOrBuilder<T> = Command<T> | CommandBuilderType<T>
 
 export function isCommandBuilder<T>(cmd: CommandOrBuilder<T>): cmd is CommandBuilderType<T> {
   return cmd instanceof CommandBuilderBase
+}
+
+export function allInputs<T>(cmd: Command<T>): Input<any, any>[] {
+  return [...cmd.arguments, ...Object.values(cmd.inputs).filter(isInput)] as any
 }
 
 class CommandBuilderBase<T> {

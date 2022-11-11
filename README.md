@@ -51,7 +51,7 @@ const program = cli<Props>('create-model')
   .option(input('service').description('Name of the service').string().required())
 
   // add --instances=<number>
-  .option(input('instances').description('Number of instances').number())
+  .option(input('instances').description('Number of instances').number().default(2))
 
   // add --type=[api|subscriber]
   .option(

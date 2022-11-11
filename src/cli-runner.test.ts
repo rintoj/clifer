@@ -340,6 +340,52 @@ describe('cli', () => {
     })
   })
 
+  test('should parse a command that has option with default value', async () => {
+    const run = jest.fn()
+    const runInner = jest.fn()
+    await runCli(
+      cli<any>('mycli')
+        .version('1.0')
+        .command(
+          command<any>('command')
+            .description('show a command')
+            .option(input('sample'))
+            .option(input('instances').number().default(1))
+            .handle(runInner),
+        )
+        .handle(run),
+      ['command', '--sample'],
+    )
+    expect(run).not.toHaveBeenCalled()
+    expect(runInner).toHaveBeenCalledWith({
+      sample: true,
+      instances: 1,
+    })
+  })
+
+  test("should override an option's default value with the given value", async () => {
+    const run = jest.fn()
+    const runInner = jest.fn()
+    await runCli(
+      cli<any>('mycli')
+        .version('1.0')
+        .command(
+          command<any>('command')
+            .description('show a command')
+            .option(input('sample'))
+            .option(input('instances').number().default(1))
+            .handle(runInner),
+        )
+        .handle(run),
+      ['command', '--sample', '--instances=10'],
+    )
+    expect(run).not.toHaveBeenCalled()
+    expect(runInner).toHaveBeenCalledWith({
+      sample: true,
+      instances: 10,
+    })
+  })
+
   test('should show help', async () => {
     const run = jest.fn()
     const help = await runCli(

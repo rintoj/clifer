@@ -1,6 +1,6 @@
 import { red, yellow } from 'chalk'
 import { toCamelCase } from 'name-util'
-import { CommandOrBuilder, isCommandBuilder } from './cli-command-builder'
+import { allInputs, CommandOrBuilder, isCommandBuilder } from './cli-command-builder'
 import { CliError } from './cli-error'
 import { showHelp, toHelp } from './cli-help'
 import { prompt } from './cli-prompt'
@@ -140,9 +140,7 @@ async function promptAllMissingValues(
   parentCommands: Command<any>[],
 ) {
   const nextProps = { ...props }
-  const inputs = [...command.arguments.filter(isInput), ...Object.values(command.inputs)].filter(
-    input => input.shouldPrompt,
-  )
+  const inputs = allInputs(command).filter(input => input.shouldPrompt)
   for (const input of inputs) {
     const key = toCamelCase(input.name as string)
     if (typeof props[key] === 'undefined') {
@@ -179,6 +177,13 @@ function showCliHelp(command: Command<any>, commands: Command<any>[]) {
   return typeof jest !== 'undefined' ? toHelp(command, prefix) : showHelp(command, prefix)
 }
 
+function parseInitialValues(command: Command<any>, parsedProps: any) {
+  return allInputs(command).reduce((a: any, i) => {
+    const key = toCamelCase(i.name as string)
+    return { ...a, [key]: a[key] ?? i.default }
+  }, parsedProps)
+}
+
 export async function runCli<T>(
   commandOrBuilder: CommandOrBuilder<T>,
   args = process.argv.slice(2),
@@ -187,9 +192,10 @@ export async function runCli<T>(
     const inputCommand = isCommandBuilder(commandOrBuilder)
       ? commandOrBuilder.toCommand()
       : commandOrBuilder
-    const [command, initialProps, commands] = parseCommand<Props>(inputCommand, args)
-    if (initialProps.version) return console.log(inputCommand.version ?? 'Unknown')
-    if (initialProps.help) return showCliHelp(command, commands)
+    const [command, parsedProps, commands] = parseCommand<Props>(inputCommand, args)
+    if (parsedProps.version) return console.log(inputCommand.version ?? 'Unknown')
+    if (parsedProps.help) return showCliHelp(command, commands)
+    const initialProps = parseInitialValues(command, parsedProps)
     const props = await promptAllMissingValues(command, initialProps, commands)
     validateMissingArgs(command, props, commands)
     if (!command.handler) {

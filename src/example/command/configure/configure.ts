@@ -38,6 +38,7 @@ export default command<Props>('configure')
       .string()
       .required()
       .choices(ENVIRONMENTS)
+      .default(Environment.Dev)
       .prompt(),
   )
   .option(input('cloud').description('Cloud provider').string().choices(CLOUD_PROVIDER))
