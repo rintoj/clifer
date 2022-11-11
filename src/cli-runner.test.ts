@@ -331,11 +331,10 @@ describe('cli', () => {
         )
         .option(input('dryRun'))
         .handle(run),
-      ['command', '--dry-run', '--sample', '--instances=2'],
+      ['command', '--sample', '--instances=2'],
     )
     expect(run).not.toHaveBeenCalled()
     expect(runInner).toHaveBeenCalledWith({
-      dryRun: true,
       sample: true,
       instances: 2,
     })

@@ -85,12 +85,12 @@ interface Props {
   dryRun?: boolean
 }
 
-interface CreateCommandProps extends Props {
+interface CreateCommandProps {
   name: string
   type?: Type
 }
 
-interface IndexCommandProps extends Props {
+interface IndexCommandProps {
   name: string
   publish?: boolean
 }

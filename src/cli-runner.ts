@@ -115,13 +115,7 @@ function parseCommand<P>(
     throw new CliError(`Invalid option "${currentArg}"`, command, parentCommands)
   for (const input of command.arguments) {
     if (isCommand(input) && input.name === currentArg) {
-      return parseCommand(
-        { ...input, inputs: { ...command.inputs, ...input.inputs } },
-        args.slice(argIndex + 1),
-        0,
-        props,
-        [...parentCommands, command],
-      )
+      return parseCommand(input, args.slice(argIndex + 1), 0, props, [...parentCommands, command])
     }
   }
   const cmdArg = command.arguments[argIndex]
@@ -146,10 +140,12 @@ async function promptAllMissingValues(
   parentCommands: Command<any>[],
 ) {
   const nextProps = { ...props }
-  const inputs = [...command.arguments.filter(isInput), ...Object.values(command.inputs)]
+  const inputs = [...command.arguments.filter(isInput), ...Object.values(command.inputs)].filter(
+    input => input.shouldPrompt,
+  )
   for (const input of inputs) {
     const key = toCamelCase(input.name as string)
-    if (input.shouldPrompt && typeof props[key] === 'undefined') {
+    if (typeof props[key] === 'undefined') {
       const nextValue = await prompt(input)
       nextProps[key] = parseValue(nextValue[key], input, command, parentCommands)
     }

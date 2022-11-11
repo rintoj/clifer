@@ -11,7 +11,6 @@ export async function prompt(...inputOrBuilders: InputOrBuilder<any, any>[]) {
   const prompts = nonEmpty(
     inputOrBuilders.map(inputOrBuilder => {
       const input = isInputBuilder(inputOrBuilder) ? inputOrBuilder.toInput() : inputOrBuilder
-      if (!input.shouldPrompt) return
       const isBoolean = input.type === InputType.Boolean
       const isNumber = input.type === InputType.Number
       const isMultiChoice = !!input.choices?.length
