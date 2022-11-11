@@ -1,13 +1,13 @@
-import { red } from 'chalk'
+import { red, yellow } from 'chalk'
 import { toCamelCase } from 'name-util'
 import { CommandOrBuilder, isCommandBuilder } from './cli-command-builder'
+import { CliError } from './cli-error'
 import { showHelp, toHelp } from './cli-help'
 import { Command, Input, InputType, isCommand, isInput } from './cli-types'
 
-class CliError extends Error {
-  constructor(public readonly message: string) {
-    super(message)
-  }
+interface Props {
+  help?: boolean
+  version?: boolean
 }
 
 function toValues(value: string[]) {
@@ -20,7 +20,12 @@ function toValues(value: string[]) {
   ].join(' or ')
 }
 
-function parseValue(value: string | boolean, input: Input<any>) {
+function parseValue(
+  value: string | boolean,
+  input: Input<any>,
+  command: Command<any>,
+  parentCommands: Command<any>[],
+) {
   const { type, options } = input
   switch (type) {
     case InputType.String:
@@ -29,6 +34,8 @@ function parseValue(value: string | boolean, input: Input<any>) {
           `Invalid value "${value}" for the input "--${input.name}". You must provide ${toValues(
             options,
           )}`,
+          command,
+          parentCommands,
         )
       }
       return value
@@ -41,6 +48,8 @@ function parseValue(value: string | boolean, input: Input<any>) {
         `Invalid value "${value}" for the input "--${
           input.name
         }". You must provide a ${input.type.toLocaleLowerCase()}`,
+        command,
+        parentCommands,
       )
     }
     case InputType.Boolean:
@@ -57,64 +66,80 @@ function toOptionName(arg: string): [string, any] {
 function parseInput<P>(
   command: Command<any>,
   args: string[],
+  argIndex = 0,
   props: P = {} as any,
-  commands: Command<any>[] = [],
+  parentCommands: Command<any>[] = [],
 ): [Command<any>, P, Command<any>[]] | undefined {
-  const currentArg = args[0]
+  const currentArg = args[argIndex]
   const [option, value = true] = toOptionName(currentArg)
   const input = command.inputs[option]
   if (!input) return undefined
   if (input.type !== InputType.Boolean && !/.+=.+/.test(currentArg)) {
-    if (typeof args[1] === 'undefined' || /^--.*/.test(args[1])) {
-      throw new CliError(`Missing value for the option "--${option}"`)
+    const nextValue = args[argIndex + 1]
+    if (typeof nextValue === 'undefined' || /^--.*/.test(nextValue)) {
+      throw new CliError(`Missing value for the option "--${option}"`, command, parentCommands)
     }
     return parseCommand(
       command,
-      args.slice(2),
-      { ...props, [toCamelCase(option)]: parseValue(args[1], input) },
-      commands,
+      args,
+      argIndex + 2,
+      { ...props, [toCamelCase(option)]: parseValue(nextValue, input, command, parentCommands) },
+      parentCommands,
     )
   }
   return parseCommand(
     command,
-    args.slice(1),
-    { ...props, [toCamelCase(option)]: parseValue(value, input) },
-    commands,
+    args,
+    argIndex + 1,
+    { ...props, [toCamelCase(option)]: parseValue(value, input, command, parentCommands) },
+    parentCommands,
   )
 }
 
 function parseCommand<P>(
   command: Command<any>,
   args: string[],
+  argIndex = 0,
   props: P = {} as any,
-  commands: Command<any>[] = [],
+  parentCommands: Command<any>[] = [],
 ): [Command<any>, P, Command<any>[]] {
-  const currentArg = args[0]
-  if (!currentArg) return [command, props, commands]
-  const input = parseInput(command, args, props, commands)
+  const currentArg = args[argIndex]
+  if (!currentArg) return [command, props, parentCommands]
+  const input = parseInput(command, args, argIndex, props, parentCommands)
   if (input) return input
-  if (/^--.+/.test(currentArg)) throw new CliError(`Invalid option "${currentArg}"`)
+  if (/^--.+/.test(currentArg))
+    throw new CliError(`Invalid option "${currentArg}"`, command, parentCommands)
   for (const input of command.arguments) {
     if (isCommand(input) && input.name === currentArg) {
-      return parseCommand(input, args.slice(1), props, [...commands, command])
+      return parseCommand(
+        { ...input, inputs: { ...command.inputs, ...input.inputs } },
+        args.slice(argIndex + 1),
+        0,
+        props,
+        [...parentCommands, command],
+      )
     }
   }
-  const cmdArg = command.arguments[0]
+  const cmdArg = command.arguments[argIndex]
   if (isInput(cmdArg)) {
     return parseCommand(
-      { ...command, arguments: command.arguments.slice(1) },
-      args.slice(1),
-      { ...props, [toCamelCase(cmdArg.name)]: parseValue(currentArg, cmdArg) },
-      [...commands, command],
+      command,
+      args,
+      argIndex + 1,
+      {
+        ...props,
+        [toCamelCase(cmdArg.name)]: parseValue(currentArg, cmdArg, command, parentCommands),
+      },
+      parentCommands,
     )
   }
-  throw new CliError(`Invalid argument "${currentArg}"`)
+  throw new CliError(`Invalid argument "${currentArg}"`, command, parentCommands)
 }
 
-function validateMissingArgs(command: Command<any>, props: any) {
+function validateMissingArgs(command: Command<any>, props: any, parentCommands: Command<any>[]) {
   for (const input of Object.values(command.inputs)) {
     if (input.isRequired && typeof props[toCamelCase(input.name)] === 'undefined') {
-      throw new CliError(`Missing a required input "--${input.name}"`)
+      throw new CliError(`Missing a required input "--${input.name}"`, command, parentCommands)
     }
   }
   for (const input of command.arguments) {
@@ -123,7 +148,7 @@ function validateMissingArgs(command: Command<any>, props: any) {
       input.isRequired &&
       typeof props[toCamelCase(input.name)] === 'undefined'
     ) {
-      throw new CliError(`Missing a required argument "<${input.name}>"`)
+      throw new CliError(`Missing a required argument "<${input.name}>"`, command, parentCommands)
     }
   }
 }
@@ -137,25 +162,23 @@ export async function runCli<T>(
   commandOrBuilder: CommandOrBuilder<T>,
   args = process.argv.slice(2),
 ) {
-  const command = isCommandBuilder(commandOrBuilder)
-    ? commandOrBuilder.toCommand()
-    : commandOrBuilder
-
-  if (args.includes('--version')) {
-    return console.log(command.version ?? 'Unknown')
-  }
-  const [targetCommand, props, commands] = parseCommand<{ help?: boolean }>(command, args)
-  if (props.help) return showCliHelp(targetCommand, commands)
   try {
-    validateMissingArgs(targetCommand, props)
-    if (!targetCommand.handler) {
-      throw new CliError(`Command "${targetCommand.name}" is missing a handler`)
+    const inputCommand = isCommandBuilder(commandOrBuilder)
+      ? commandOrBuilder.toCommand()
+      : commandOrBuilder
+    const [command, props, commands] = parseCommand<Props>(inputCommand, args)
+    if (props.version) return console.log(inputCommand.version ?? 'Unknown')
+    if (props.help) return showCliHelp(command, commands)
+    validateMissingArgs(command, props, commands)
+    if (!command.handler) {
+      throw new CliError(`Command "${inputCommand.name}" is missing a handler`, command, commands)
     }
-    return targetCommand.handler(props)
+    return command.handler(props as any)
   } catch (e) {
     if (e instanceof CliError) {
       console.error(red(`\nError: ${e.message}\n`))
-      return showCliHelp(targetCommand, commands)
+      const commandText = [...e.parentCommands, e.command].map(c => c.name).join(' ')
+      return console.log(yellow(`Run "${commandText} --help" to see help`))
     }
     throw e
   }

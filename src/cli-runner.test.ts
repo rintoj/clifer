@@ -118,58 +118,70 @@ describe('cli', () => {
 
   test('should throw an error if value for an option is missing', async () => {
     const run = jest.fn()
-    await expect(() =>
-      runCli(
-        cli('hypergraph')
-          .version('1.0')
-          .option(input('dry-run'))
-          .option(input('service').string())
-          .handle(run),
-        ['--dry-run', '--service'],
-      ),
-    ).rejects.toThrow('Missing value for the option "--service"')
+    console.error = jest.fn()
+    await runCli(
+      cli('hypergraph')
+        .version('1.0')
+        .option(input('dry-run'))
+        .option(input('service').string())
+        .handle(run),
+      ['--dry-run', '--service'],
+    )
+    expect(run).not.toHaveBeenCalled()
+    expect(console.error).toHaveBeenCalledWith(
+      '\nError: Missing value for the option "--service"\n',
+    )
   })
 
   test('should throw an error if value is invalid for an option', async () => {
     const run = jest.fn()
-    await expect(() =>
-      runCli(
-        cli('hypergraph')
-          .version('1.0')
-          .option(input('dry-run'))
-          .option(input('instances').number())
-          .handle(run),
-        ['--dry-run', '--instances', 'x'],
-      ),
-    ).rejects.toThrow('Invalid value "x" for the input "--instances". You must provide a number')
+    console.error = jest.fn()
+    await runCli(
+      cli('hypergraph')
+        .version('1.0')
+        .option(input('dry-run'))
+        .option(input('instances').number())
+        .handle(run),
+      ['--dry-run', '--instances', 'x'],
+    )
+    expect(run).not.toHaveBeenCalled()
+    expect(console.error).toHaveBeenCalledWith(
+      '\nError: Invalid value "x" for the input "--instances". You must provide a number\n',
+    )
   })
 
   test('should throw an error if value for an option is missing', async () => {
     const run = jest.fn()
-    await expect(() =>
-      runCli(
-        cli('hypergraph')
-          .version('1.0')
-          .option(input('dry-run'))
-          .option(input('service').string())
-          .handle(run),
-        ['--service', '--dry-run'],
-      ),
-    ).rejects.toThrow('Missing value for the option "--service"')
+    console.error = jest.fn()
+    await runCli(
+      cli('hypergraph')
+        .version('1.0')
+        .option(input('dry-run'))
+        .option(input('service').string())
+        .handle(run),
+      ['--service', '--dry-run'],
+    )
+    expect(run).not.toHaveBeenCalled()
+    expect(console.error).toHaveBeenCalledWith(
+      '\nError: Missing value for the option "--service"\n',
+    )
   })
 
   test('should throw an error if value for an option is missing', async () => {
     const run = jest.fn()
-    await expect(() =>
-      runCli(
-        cli('hypergraph')
-          .version('1.0')
-          .option(input('dry-run'))
-          .option(input('service').string())
-          .handle(run),
-        ['--service='],
-      ),
-    ).rejects.toThrow('Missing value for the option "--service"')
+    console.error = jest.fn()
+    await runCli(
+      cli('hypergraph')
+        .version('1.0')
+        .option(input('dry-run'))
+        .option(input('service').string())
+        .handle(run),
+      ['--service='],
+    )
+    expect(run).not.toHaveBeenCalled()
+    expect(console.error).toHaveBeenCalledWith(
+      '\nError: Missing value for the option "--service"\n',
+    )
   })
 
   test('should throw error if required option is not provided', async () => {
@@ -188,44 +200,48 @@ describe('cli', () => {
 
   test('should throw an error if an argument is invalid', async () => {
     const run = jest.fn()
-    await expect(() =>
-      runCli(
-        cli('hypergraph')
-          .version('1.0')
-          .option(input('dry-run'))
-          .option(input('service').string())
-          .handle(run),
-        ['just-an-argument'],
-      ),
-    ).rejects.toThrow('Invalid argument "just-an-argument')
+    console.error = jest.fn()
+    await runCli(
+      cli('hypergraph')
+        .version('1.0')
+        .option(input('dry-run'))
+        .option(input('service').string())
+        .handle(run),
+      ['just-an-argument'],
+    )
+    expect(run).not.toHaveBeenCalled()
+    expect(console.error).toHaveBeenCalledWith('\nError: Invalid argument "just-an-argument"\n')
   })
 
   test('should throw an error if an option is invalid', async () => {
     const run = jest.fn()
-    await expect(() =>
-      runCli(
-        cli('hypergraph')
-          .version('1.0')
-          .option(input('dry-run'))
-          .option(input('service').string())
-          .handle(run),
-        ['--just-an-option'],
-      ),
-    ).rejects.toThrow('Invalid option "--just-an-option')
+    console.error = jest.fn()
+    await runCli(
+      cli('hypergraph')
+        .version('1.0')
+        .option(input('dry-run'))
+        .option(input('service').string())
+        .handle(run),
+      ['--just-an-option'],
+    )
+    expect(run).not.toHaveBeenCalled()
+    expect(console.error).toHaveBeenCalledWith('\nError: Invalid option "--just-an-option"\n')
   })
 
   test('should throw an error if input is not from the list', async () => {
     const run = jest.fn()
-    await expect(() =>
-      runCli(
-        cli('hypergraph')
-          .version('1.0')
-          .option(input('type').string().options(['string', 'number']).toInput())
-          .handle(run),
-        ['--type=boolean'],
-      ),
-    ).rejects.toThrow(
-      'Invalid value "boolean" for the input "--type". You must provide "string" or "number"',
+    console.error = jest.fn()
+    await runCli(
+      cli('hypergraph')
+        .version('1.0')
+        .option(input('type').string().options(['string', 'number']).toInput())
+        .handle(run),
+      ['--type=boolean'],
+    )
+
+    expect(run).not.toHaveBeenCalled()
+    expect(console.error).toHaveBeenCalledWith(
+      '\nError: Invalid value "boolean" for the input "--type". You must provide "string" or "number"\n',
     )
   })
 
@@ -311,11 +327,11 @@ describe('cli', () => {
         .command(
           command('command')
             .description('show a command')
-            .option(input('dry-run'))
             .option(input('sample'))
             .option(input('instances').number())
             .handle(runInner),
         )
+        .option(input('dry-run'))
         .handle(run),
       ['command', '--dry-run', '--sample', '--instances=2'],
     )

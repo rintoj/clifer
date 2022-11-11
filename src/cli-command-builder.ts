@@ -73,7 +73,6 @@ class CommandBuilderWithArguments<T> extends CommandBuilderBase<T> {
         if (isInput(currentArg)) currentArg.isRequired = true
       }
     }
-
     this.cmd.arguments.push(arg)
     return this
   }
