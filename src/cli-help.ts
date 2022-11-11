@@ -96,13 +96,19 @@ function toOptionType(input: Input<any>): string {
 }
 
 function toOptionHelp(input: Input<any>): string[] {
-  return [yellow(`--${input.name}${toOptionType(input)}`), input.description ?? '']
+  return [
+    yellow(`--${input.name}${toOptionType(input)}`),
+    `${input.isRequired ? '[Required] ' : ''}${input.description ?? ''}`,
+  ]
 }
 
 function toInputNames(command: Command<any>) {
   const hasInputs = !!Object.values(command.inputs).length
   return hasInputs
-    ? extractInputs(command).map(input => yellow(`[--${input.name}${toOptionType(input)}]`))
+    ? extractInputs(command).map(input => {
+        const option = `--${input.name}${toOptionType(input)}`
+        return yellow(input.isRequired ? option : `[${option}]`)
+      })
     : []
 }
 

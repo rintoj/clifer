@@ -68,6 +68,31 @@ describe('cli', () => {
     )
   })
 
+  test('should not add square brackets around required inputs', () => {
+    const help = toHelp(
+      cli('hypergraph')
+        .option(input('service-name').description('Name of the service').string().required())
+        .option(input('instances').description('Number of instances').number())
+        .option(input('dry-run').description('Do not make changes but run in dry-run mode'))
+        .toCommand(),
+    )
+    expect(trim(help)).toEqual(
+      trim(`
+        hypergraph   --service-name=<string> [--instances=<number>] [--dry-run] [--help]
+
+        OPTIONS
+
+        --service-name=<string>   [Required] Name of the service
+
+        --instances=<number>      Number of instances
+
+        --dry-run                 Do not make changes but run in dry-run mode
+
+        --help                    Show help
+      `),
+    )
+  })
+
   test('should generate a simple cli with version and help', () => {
     const help = toHelp(cli('hypergraph').version('1.0.0').toCommand())
     expect(trim(help)).toEqual(
