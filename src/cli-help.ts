@@ -1,5 +1,5 @@
-import { green, yellow, gray } from 'chalk'
-import { Command, Input, InputType, isInput, Kind, isCommand } from './cli-types'
+import { gray, green, red, yellow } from 'chalk'
+import { Command, Input, InputType, isCommand, isInput, Kind } from './cli-types'
 
 const SPACER = '   '
 const NEW_LINE = `\n`
@@ -98,7 +98,7 @@ function toOptionType(input: Input<any>): string {
 function toOptionHelp(input: Input<any>): string[] {
   return [
     yellow(`--${input.name}${toOptionType(input)}`),
-    `${input.isRequired ? '[Required] ' : ''}${input.description ?? ''}`,
+    `${input.isRequired ? red('[Required] ') : ''}${input.description ?? ''}`,
   ]
 }
 

@@ -11,6 +11,7 @@ jest.mock('chalk', () => ({
   yellow: (a: string) => a,
   green: (a: string) => a,
   gray: (a: string) => a,
+  red: (a: string) => a,
 }))
 
 describe('cli', () => {
@@ -73,19 +74,20 @@ describe('cli', () => {
 
   test('should throw an error if a required argument is missing', async () => {
     const run = jest.fn()
-    await expect(() =>
-      runCli(
-        cli('hypergraph')
-          .version('1.0')
-          .argument(input('name').string())
-          .argument(input('category').string())
-          .argument(input('type').string().required())
-          .option(input('dry-run'))
-          .option(input('service').string())
-          .handle(run),
-        ['test', 'category1'],
-      ),
-    ).rejects.toThrowError('Missing a required argument "<type>"')
+    console.error = jest.fn()
+    await runCli(
+      cli('hypergraph')
+        .version('1.0')
+        .argument(input('name').string())
+        .argument(input('category').string())
+        .argument(input('type').string().required())
+        .option(input('dry-run'))
+        .option(input('service').string())
+        .handle(run),
+      ['test', 'category1'],
+    )
+    expect(run).not.toHaveBeenCalled()
+    expect(console.error).not.toHaveBeenCalledWith(`Error: Missing required argument "<type>"`)
   })
 
   test('should parse value from the position next to option', async () => {
@@ -172,16 +174,16 @@ describe('cli', () => {
 
   test('should throw error if required option is not provided', async () => {
     const run = jest.fn()
-    await expect(() =>
-      runCli(
-        cli('hypergraph')
-          .version('1.0')
-          .option(input('dry-run'))
-          .option(input('service').string().required())
-          .handle(run),
-        [],
-      ),
-    ).rejects.toThrow('Missing a required input "--service"')
+    console.error = jest.fn()
+    await runCli(
+      cli('hypergraph')
+        .version('1.0')
+        .option(input('dry-run'))
+        .option(input('service').string().required())
+        .handle(run),
+      [],
+    )
+    expect(console.error).toHaveBeenCalledWith(`\nError: Missing a required input "--service"\n`)
   })
 
   test('should throw an error if an argument is invalid', async () => {
@@ -229,26 +231,28 @@ describe('cli', () => {
 
   test('should throw an error if required argument is not provided', async () => {
     const run = jest.fn()
-    await expect(() =>
-      runCli(
-        cli('hypergraph').version('1.0').argument(input('package').string().required()).handle(run),
-        [],
-      ),
-    ).rejects.toThrow('Missing a required argument "<package>"')
+    console.error = jest.fn()
+    await runCli(
+      cli('hypergraph').version('1.0').argument(input('package').string().required()).handle(run),
+      [],
+    )
+    expect(run).not.toHaveBeenCalled()
+    expect(console.error).toHaveBeenCalledWith(`\nError: Missing a required argument "<package>"\n`)
   })
 
   test('should throw an error if a second argument is not provided', async () => {
     const run = jest.fn()
-    await expect(() =>
-      runCli(
-        cli('hypergraph')
-          .version('1.0')
-          .argument(input('package').string().required())
-          .argument(input('name').string().required())
-          .handle(run),
-        ['package1'],
-      ),
-    ).rejects.toThrow('Missing a required argument "<name>"')
+    console.error = jest.fn()
+    await runCli(
+      cli('hypergraph')
+        .version('1.0')
+        .argument(input('package').string().required())
+        .argument(input('name').string().required())
+        .handle(run),
+      ['package1'],
+    )
+    expect(run).not.toHaveBeenCalled()
+    expect(console.error).toHaveBeenCalledWith(`\nError: Missing a required argument "<name>"\n`)
   })
 
   test('should parse a command', async () => {

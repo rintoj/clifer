@@ -7,6 +7,7 @@ jest.mock('chalk', () => ({
   yellow: (a: string) => a,
   green: (a: string) => a,
   gray: (a: string) => a,
+  red: (a: string) => a,
 }))
 
 function trim(output: string) {

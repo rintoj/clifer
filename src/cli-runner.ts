@@ -1,7 +1,14 @@
+import { red } from 'chalk'
 import { toCamelCase } from 'name-util'
 import { CommandOrBuilder, isCommandBuilder } from './cli-command-builder'
 import { showHelp, toHelp } from './cli-help'
 import { Command, Input, InputType, isCommand, isInput } from './cli-types'
+
+class CliError extends Error {
+  constructor(public readonly message: string) {
+    super(message)
+  }
+}
 
 function toValues(value: string[]) {
   return [
@@ -18,7 +25,7 @@ function parseValue(value: string | boolean, input: Input<any>) {
   switch (type) {
     case InputType.String:
       if (options?.length && !options.includes(value)) {
-        throw new Error(
+        throw new CliError(
           `Invalid value "${value}" for the input "--${input.name}". You must provide ${toValues(
             options,
           )}`,
@@ -30,7 +37,7 @@ function parseValue(value: string | boolean, input: Input<any>) {
         const targetValue = parseInt(value, undefined)
         if (!isNaN(targetValue)) return targetValue
       }
-      throw new Error(
+      throw new CliError(
         `Invalid value "${value}" for the input "--${
           input.name
         }". You must provide a ${input.type.toLocaleLowerCase()}`,
@@ -59,7 +66,7 @@ function parseInput<P>(
   if (!input) return undefined
   if (input.type !== InputType.Boolean && !/.+=.+/.test(currentArg)) {
     if (typeof args[1] === 'undefined' || /^--.*/.test(args[1])) {
-      throw new Error(`Missing value for the option "--${option}"`)
+      throw new CliError(`Missing value for the option "--${option}"`)
     }
     return parseCommand(
       command,
@@ -86,7 +93,7 @@ function parseCommand<P>(
   if (!currentArg) return [command, props, commands]
   const input = parseInput(command, args, props, commands)
   if (input) return input
-  if (/^--.+/.test(currentArg)) throw new Error(`Invalid option "${currentArg}"`)
+  if (/^--.+/.test(currentArg)) throw new CliError(`Invalid option "${currentArg}"`)
   for (const input of command.arguments) {
     if (isCommand(input) && input.name === currentArg) {
       return parseCommand(input, args.slice(1), props, [...commands, command])
@@ -101,13 +108,13 @@ function parseCommand<P>(
       [...commands, command],
     )
   }
-  throw new Error(`Invalid argument "${currentArg}"`)
+  throw new CliError(`Invalid argument "${currentArg}"`)
 }
 
 function validateMissingArgs(command: Command<any>, props: any) {
   for (const input of Object.values(command.inputs)) {
     if (input.isRequired && typeof props[toCamelCase(input.name)] === 'undefined') {
-      throw new Error(`Missing a required input "--${input.name}"`)
+      throw new CliError(`Missing a required input "--${input.name}"`)
     }
   }
   for (const input of command.arguments) {
@@ -116,9 +123,14 @@ function validateMissingArgs(command: Command<any>, props: any) {
       input.isRequired &&
       typeof props[toCamelCase(input.name)] === 'undefined'
     ) {
-      throw new Error(`Missing a required argument "<${input.name}>"`)
+      throw new CliError(`Missing a required argument "<${input.name}>"`)
     }
   }
+}
+
+function showCliHelp(command: Command<any>, commands: Command<any>[]) {
+  const prefix = commands.map(({ name }) => name).join(' ')
+  return typeof jest !== 'undefined' ? toHelp(command, prefix) : showHelp(command, prefix)
 }
 
 export async function runCli<T>(
@@ -133,12 +145,15 @@ export async function runCli<T>(
     return console.log(command.version ?? 'Unknown')
   }
   const [targetCommand, props, commands] = parseCommand<{ help?: boolean }>(command, args)
-  if (props.help) {
-    const prefix = commands.map(({ name }) => name).join(' ')
-    return typeof jest !== 'undefined'
-      ? toHelp(targetCommand, prefix)
-      : showHelp(targetCommand, prefix)
+  if (props.help) return showCliHelp(targetCommand, commands)
+  try {
+    validateMissingArgs(targetCommand, props)
+    return targetCommand.handler?.(props)
+  } catch (e) {
+    if (e instanceof CliError) {
+      console.error(red(`\nError: ${e.message}\n`))
+      return showCliHelp(targetCommand, commands)
+    }
+    throw e
   }
-  validateMissingArgs(targetCommand, props)
-  return targetCommand.handler?.(props)
 }
