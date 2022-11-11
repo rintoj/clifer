@@ -148,7 +148,10 @@ export async function runCli<T>(
   if (props.help) return showCliHelp(targetCommand, commands)
   try {
     validateMissingArgs(targetCommand, props)
-    return targetCommand.handler?.(props)
+    if (!targetCommand.handler) {
+      throw new CliError(`Command "${targetCommand.name}" is missing a handler`)
+    }
+    return targetCommand.handler(props)
   } catch (e) {
     if (e instanceof CliError) {
       console.error(red(`\nError: ${e.message}\n`))
