@@ -202,6 +202,8 @@ const output = await prompt(
 console.log(output)
 ```
 
+![Prompt](./docs/prompt.jpg)
+
 ## Automatic Release
 
 Here is an example of the release type that will be done based on a commit messages:
