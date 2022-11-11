@@ -15,13 +15,12 @@ const ENVIRONMENTS = [Environment.Local, Environment.Dev, Environment.Prod]
 const CLOUD_PROVIDER = [CloudProvider.Aws, CloudProvider.GCloud]
 
 interface Props {
-  awsAccountId: string
-  awsAccessKey: string
-  awsSecret: string
-  awsRegion: string
   environment: Environment
-  cloud: CloudProvider
-  test?: boolean
+  cloud?: CloudProvider
+  awsAccountId?: string
+  awsAccessKey?: string
+  awsSecret?: string
+  awsRegion?: string
 }
 
 async function run(props: Props) {

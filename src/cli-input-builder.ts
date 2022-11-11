@@ -1,5 +1,5 @@
 import { toDashedName } from 'name-util'
-import { Input, InputName, InputType, InputValueType, Kind } from './cli-types'
+import { AllRequired, Input, InputName, InputType, InputValueType, Kind } from './cli-types'
 
 export type InputBuilderType<T, V extends InputValueType> =
   | BaseInputBuilder<T, V>
@@ -41,7 +41,7 @@ class NonBooleanInputBuilder<T, V extends InputValueType> extends BaseInputBuild
     this.input = input
   }
 
-  required(isRequired = true) {
+  required(isRequired = true): NonBooleanInputBuilder<AllRequired<T>, V> {
     this.input.isRequired = isRequired
     return this
   }
