@@ -18,5 +18,5 @@ function run(props: Props) {
 export default command<Props>('model')
   .description('Create a model')
   .argument(input('name').description('Name of the model').string().required())
-  .option(input('type').description('Type of the model').string().options([Type.ts, Type.js]))
+  .option(input('type').description('Type of the model').string().choices([Type.ts, Type.js]))
   .handle(run)

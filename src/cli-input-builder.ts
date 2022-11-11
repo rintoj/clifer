@@ -30,6 +30,12 @@ class BaseInputBuilder<T, V extends InputValueType> {
     return this
   }
 
+  prompt(message?: string) {
+    this.input.shouldPrompt = true
+    this.input.promptMessage = message
+    return this
+  }
+
   toInput() {
     return this.input
   }
@@ -46,8 +52,8 @@ class NonBooleanInputBuilder<T, V extends InputValueType> extends BaseInputBuild
     return this
   }
 
-  options(values: Array<V>) {
-    this.input.options = values
+  choices(values: Array<V>) {
+    this.input.choices = values
     return this
   }
 }
@@ -61,7 +67,7 @@ export class InputBuilder<T, V extends InputValueType> extends BaseInputBuilder<
     return new NonBooleanInputBuilder<T, string>({
       ...this.input,
       type: InputType.String,
-      options: [],
+      choices: [],
     })
   }
 
@@ -69,7 +75,7 @@ export class InputBuilder<T, V extends InputValueType> extends BaseInputBuilder<
     return new NonBooleanInputBuilder<T, number>({
       ...this.input,
       type: InputType.Number,
-      options: [],
+      choices: [],
     })
   }
 }

@@ -3,6 +3,7 @@ import { toCamelCase } from 'name-util'
 import { CommandOrBuilder, isCommandBuilder } from './cli-command-builder'
 import { CliError } from './cli-error'
 import { showHelp, toHelp } from './cli-help'
+import { prompt } from './cli-prompt'
 import { Command, Input, InputType, isCommand, isInput } from './cli-types'
 
 interface Props {
@@ -26,24 +27,27 @@ function parseValue(
   command: Command<any>,
   parentCommands: Command<any>[],
 ) {
-  const { type, options } = input
+  const { type, choices } = input
   switch (type) {
     case InputType.String:
-      if (options?.length && !options.includes(value)) {
+      if (choices?.length && !choices.includes(value)) {
         throw new CliError(
           `Invalid value "${value}" for the input "--${
             input.name as string
-          }". You must provide ${toValues(options)}`,
+          }". You must provide ${toValues(choices)}`,
           command,
           parentCommands,
         )
       }
       return value
     case InputType.Number: {
-      if (typeof value === 'string') {
-        const targetValue = parseInt(value, undefined)
-        if (!isNaN(targetValue)) return targetValue
-      }
+      const targetValue =
+        typeof value === 'number'
+          ? value
+          : typeof value === 'string'
+          ? parseInt(value, undefined)
+          : undefined
+      if (targetValue && !isNaN(targetValue)) return targetValue
       throw new CliError(
         `Invalid value "${value}" for the input "--${
           input.name as string
@@ -136,6 +140,23 @@ function parseCommand<P>(
   throw new CliError(`Invalid argument "${currentArg}"`, command, parentCommands)
 }
 
+async function promptAllMissingValues(
+  command: Command<any>,
+  props: any,
+  parentCommands: Command<any>[],
+) {
+  const nextProps = { ...props }
+  const inputs = [...command.arguments.filter(isInput), ...Object.values(command.inputs)]
+  for (const input of inputs) {
+    const key = toCamelCase(input.name as string)
+    if (input.shouldPrompt && typeof props[key] === 'undefined') {
+      const nextValue = await prompt(input)
+      nextProps[key] = parseValue(nextValue[key], input, command, parentCommands)
+    }
+  }
+  return nextProps
+}
+
 function validateMissingArgs(command: Command<any>, props: any, parentCommands: Command<any>[]) {
   for (const input of Object.values(command.inputs)) {
     if (input.isRequired && typeof props[toCamelCase(input.name as string)] === 'undefined') {
@@ -170,9 +191,10 @@ export async function runCli<T>(
     const inputCommand = isCommandBuilder(commandOrBuilder)
       ? commandOrBuilder.toCommand()
       : commandOrBuilder
-    const [command, props, commands] = parseCommand<Props>(inputCommand, args)
-    if (props.version) return console.log(inputCommand.version ?? 'Unknown')
-    if (props.help) return showCliHelp(command, commands)
+    const [command, initialProps, commands] = parseCommand<Props>(inputCommand, args)
+    if (initialProps.version) return console.log(inputCommand.version ?? 'Unknown')
+    if (initialProps.help) return showCliHelp(command, commands)
+    const props = await promptAllMissingValues(command, initialProps, commands)
     validateMissingArgs(command, props, commands)
     if (!command.handler) {
       throw new CliError(`Command "${inputCommand.name}" is missing a handler`, command, commands)

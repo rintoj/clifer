@@ -85,8 +85,8 @@ function toInputHelp(input: Command<any> | Input<any, any>): string[] {
 }
 
 function toOptionType(input: Input<any, any>): string {
-  if (input.options?.length) {
-    return `=<${input.options?.join('|')}>`
+  if (input.choices?.length) {
+    return `=<${input.choices?.join('|')}>`
   }
   return input.type === InputType.String
     ? '=<string>'

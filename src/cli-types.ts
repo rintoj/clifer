@@ -24,8 +24,10 @@ export interface Input<T, V extends InputValueType> {
   name: InputName<T>
   description?: string
   type: InputType
-  options?: Array<V>
+  choices?: Array<V>
   isRequired?: boolean
+  shouldPrompt?: boolean
+  promptMessage?: string
 }
 
 export interface Command<T> {

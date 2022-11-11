@@ -234,7 +234,7 @@ describe('cli', () => {
     await runCli(
       cli<any>('mycli')
         .version('1.0')
-        .option(input('type').string().options(['string', 'number']).toInput())
+        .option(input('type').string().choices(['string', 'number']).toInput())
         .handle(run),
       ['--type=boolean'],
     )

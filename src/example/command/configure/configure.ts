@@ -17,10 +17,12 @@ const CLOUD_PROVIDER = [CloudProvider.Aws, CloudProvider.GCloud]
 interface Props {
   environment: Environment
   cloud?: CloudProvider
-  awsAccountId?: string
-  awsAccessKey?: string
+  awsAccountId: string
+  awsAccessKey: string
   awsSecret?: string
   awsRegion?: string
+  name?: string
+  localPort?: number
 }
 
 async function run(props: Props) {
@@ -29,10 +31,25 @@ async function run(props: Props) {
 
 export default command<Props>('configure')
   .description('Configure environment for this project')
-  .option(input('environment').description('Environment').string().required().options(ENVIRONMENTS))
-  .option(input('cloud').description('Cloud provider').string().options(CLOUD_PROVIDER))
-  .option(input('awsAccountId').description('AWS account id').string())
+  .argument(input('name').description('Project name').string().prompt())
+  .option(
+    input('environment')
+      .description('Environment')
+      .string()
+      .required()
+      .choices(ENVIRONMENTS)
+      .prompt(),
+  )
+  .option(input('cloud').description('Cloud provider').string().choices(CLOUD_PROVIDER))
+  .option(input('awsAccountId').description('AWS account id').string().prompt())
   .option(input('awsAccessKey').description('AWS account access key').string())
   .option(input('awsSecret').description('AWS account access secret').string())
   .option(input('awsRegion').description('AWS region').string())
+  .option(
+    input('localPort')
+      .description('Local port for starting up the service')
+      .number()
+      .choices([4000, 4001, 4002])
+      .prompt(),
+  )
   .handle(run)

@@ -33,7 +33,7 @@ const program = cli<Props>('create-model')
 
   // add --type=[api|subscriber]
   .option(
-    input('type').description('Type of the model').string().options([Type.api, Type.subscriber]),
+    input('type').description('Type of the model').string().choices([Type.api, Type.subscriber]),
   )
 
   // add --dry-run flag
