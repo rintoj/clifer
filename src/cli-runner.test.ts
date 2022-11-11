@@ -386,6 +386,31 @@ describe('cli', () => {
     })
   })
 
+  test('should load values at run time', async () => {
+    const run = jest.fn()
+    const runInner = jest.fn()
+    const loader = async () => ({ sample: false, instances: 15 })
+    await runCli(
+      cli<any>('mycli')
+        .version('1.0')
+        .command(
+          command<any>('command')
+            .description('show a command')
+            .load(loader)
+            .option(input('sample'))
+            .option(input('instances').number().default(1))
+            .handle(runInner),
+        )
+        .handle(run),
+      ['command'],
+    )
+    expect(run).not.toHaveBeenCalled()
+    expect(runInner).toHaveBeenCalledWith({
+      sample: false,
+      instances: 15,
+    })
+  })
+
   test('should show help', async () => {
     const run = jest.fn()
     const help = await runCli(

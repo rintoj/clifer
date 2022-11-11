@@ -177,10 +177,15 @@ function showCliHelp(command: Command<any>, commands: Command<any>[]) {
   return typeof jest !== 'undefined' ? toHelp(command, prefix) : showHelp(command, prefix)
 }
 
-function parseInitialValues(command: Command<any>, parsedProps: any) {
-  return allInputs(command).reduce((a: any, i) => {
+async function parseInitialValues(command: Command<any>, parsedProps: any) {
+  const props = allInputs(command).reduce((a: any, i) => {
     const key = toCamelCase(i.name as string)
     return { ...a, [key]: a[key] ?? i.default }
+  }, parsedProps)
+  const loadedProps = (await command?.loader?.(props)) ?? {}
+  return allInputs(command).reduce((a: any, i) => {
+    const key = toCamelCase(i.name as string)
+    return { ...a, [key]: a[key] ?? loadedProps[key] ?? i.default }
   }, parsedProps)
 }
 
@@ -195,7 +200,7 @@ export async function runCli<T>(
     const [command, parsedProps, commands] = parseCommand<Props>(inputCommand, args)
     if (parsedProps.version) return console.log(inputCommand.version ?? 'Unknown')
     if (parsedProps.help) return showCliHelp(command, commands)
-    const initialProps = parseInitialValues(command, parsedProps)
+    const initialProps = await parseInitialValues(command, parsedProps)
     const props = await promptAllMissingValues(command, initialProps, commands)
     validateMissingArgs(command, props, commands)
     if (!command.handler) {

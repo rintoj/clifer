@@ -38,6 +38,7 @@ export interface Command<T> {
   version?: string
   arguments: Array<Command<any> | Input<T, InputValueType>>
   inputs: ById<Input<any, InputValueType>>
+  loader?: (props: Partial<T>) => Promise<Partial<T>>
   handler?: (props: T) => void | Promise<any>
 }
 

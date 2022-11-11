@@ -61,6 +61,9 @@ const program = cli<Props>('create-model')
   // add --dry-run flag
   .option(input('dryRun').description('Do a dry run'))
 
+  // load values from external source or at runtime (eg. from a file)
+  .load(async (props: Partial<T>) => readJSONAsync('./env.json'))
+
   // handle the command
   .handle(run)
 

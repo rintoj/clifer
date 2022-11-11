@@ -10,7 +10,9 @@ export function isCommandBuilder<T>(cmd: CommandOrBuilder<T>): cmd is CommandBui
 }
 
 export function allInputs<T>(cmd: Command<T>): Input<any, any>[] {
-  return [...cmd.arguments, ...Object.values(cmd.inputs).filter(isInput)] as any
+  return [...cmd.arguments, ...Object.values(cmd.inputs).filter(isInput)].filter(
+    i => !['version', 'help'].includes(i.name as string),
+  ) as any
 }
 
 class CommandBuilderBase<T> {
@@ -35,6 +37,11 @@ class CommandBuilderBase<T> {
   option<V extends InputValueType>(inputOrBuilder: InputOrBuilder<T, V>) {
     const input = isInputBuilder(inputOrBuilder) ? inputOrBuilder.toInput() : inputOrBuilder
     this.cmd.inputs[input.name as any] = input
+    return this
+  }
+
+  load(loader: (props: Partial<T>) => Promise<Partial<T>>) {
+    this.cmd.loader = loader
     return this
   }
 

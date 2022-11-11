@@ -1,3 +1,5 @@
+import { readFileSync, writeFileSync } from 'fs'
+import { resolve } from 'path'
 import { command, input } from '../../..'
 
 enum Environment {
@@ -13,6 +15,7 @@ enum CloudProvider {
 
 const ENVIRONMENTS = [Environment.Local, Environment.Dev, Environment.Prod]
 const CLOUD_PROVIDER = [CloudProvider.Aws, CloudProvider.GCloud]
+const ENV_FILE = resolve(__dirname, '..', '..', '..', '..', 'env.json')
 
 interface Props {
   environment: Environment
@@ -25,8 +28,17 @@ interface Props {
   localPort?: number
 }
 
+async function loadFromEnv() {
+  try {
+    return JSON.parse(readFileSync(ENV_FILE, { encoding: 'utf-8' }).toString())
+  } catch (e) {
+    return {} as any
+  }
+}
+
 async function run(props: Props) {
   console.log({ props })
+  writeFileSync(ENV_FILE, JSON.stringify(props, null, 2), { encoding: 'utf-8' })
 }
 
 export default command<Props>('configure')
@@ -53,4 +65,5 @@ export default command<Props>('configure')
       .choices([4000, 4001, 4002])
       .prompt(),
   )
+  .load(loadFromEnv)
   .handle(run)
