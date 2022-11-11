@@ -17,14 +17,14 @@ jest.mock('chalk', () => ({
 describe('cli', () => {
   test('should run a simple cli', async () => {
     const run = jest.fn()
-    await runCli(cli('hypergraph').version('1.0').handle(run), [])
+    await runCli(cli('mycli').version('1.0').handle(run), [])
     expect(run).toHaveBeenCalledWith({})
   })
 
   test('should show the version', async () => {
     const run = jest.fn()
     console.log = jest.fn()
-    await runCli(cli('hypergraph').version('1.0').handle(run), ['--version'])
+    await runCli(cli('mycli').version('1.0').handle(run), ['--version'])
     expect(run).not.toHaveBeenCalled()
     expect(console.log).toHaveBeenCalledWith('1.0')
   })
@@ -32,9 +32,9 @@ describe('cli', () => {
   test('should parse options', async () => {
     const run = jest.fn()
     await runCli(
-      cli('hypergraph')
+      cli<any>('mycli')
         .version('1.0')
-        .option(input('dry-run'))
+        .option(input('dryRun'))
         .option(input('service').string())
         .handle(run),
       ['--dry-run', '--service=cdn'],
@@ -45,10 +45,10 @@ describe('cli', () => {
   test('should parse positional arguments', async () => {
     const run = jest.fn()
     await runCli(
-      cli('hypergraph')
+      cli<any>('mycli')
         .version('1.0')
         .argument(input('name').string())
-        .option(input('dry-run'))
+        .option(input('dryRun'))
         .option(input('service').string())
         .handle(run),
       ['test'],
@@ -59,12 +59,12 @@ describe('cli', () => {
   test('should parse multiple positional arguments', async () => {
     const run = jest.fn()
     await runCli(
-      cli('hypergraph')
+      cli<any>('mycli')
         .version('1.0')
         .argument(input('name').string())
         .argument(input('category').string())
         .argument(input('type').string())
-        .option(input('dry-run'))
+        .option(input('dryRun'))
         .option(input('service').string())
         .handle(run),
       ['test', 'category1', 'type1'],
@@ -76,12 +76,12 @@ describe('cli', () => {
     const run = jest.fn()
     console.error = jest.fn()
     await runCli(
-      cli('hypergraph')
+      cli<any>('mycli')
         .version('1.0')
         .argument(input('name').string())
         .argument(input('category').string())
         .argument(input('type').string().required())
-        .option(input('dry-run'))
+        .option(input('dryRun'))
         .option(input('service').string())
         .handle(run),
       ['test', 'category1'],
@@ -93,9 +93,9 @@ describe('cli', () => {
   test('should parse value from the position next to option', async () => {
     const run = jest.fn()
     await runCli(
-      cli('hypergraph')
+      cli<any>('mycli')
         .version('1.0')
-        .option(input('dry-run'))
+        .option(input('dryRun'))
         .option(input('service').string())
         .handle(run),
       ['--dry-run', '--service', 'cdn'],
@@ -106,9 +106,9 @@ describe('cli', () => {
   test('should parse of a boolean option', async () => {
     const run = jest.fn()
     await runCli(
-      cli('hypergraph')
+      cli<any>('mycli')
         .version('1.0')
-        .option(input('dry-run'))
+        .option(input('dryRun'))
         .option(input('service').string())
         .handle(run),
       ['--dry-run=true'],
@@ -120,9 +120,9 @@ describe('cli', () => {
     const run = jest.fn()
     console.error = jest.fn()
     await runCli(
-      cli('hypergraph')
+      cli<any>('mycli')
         .version('1.0')
-        .option(input('dry-run'))
+        .option(input('dryRun'))
         .option(input('service').string())
         .handle(run),
       ['--dry-run', '--service'],
@@ -137,9 +137,9 @@ describe('cli', () => {
     const run = jest.fn()
     console.error = jest.fn()
     await runCli(
-      cli('hypergraph')
+      cli<any>('mycli')
         .version('1.0')
-        .option(input('dry-run'))
+        .option(input('dryRun'))
         .option(input('instances').number())
         .handle(run),
       ['--dry-run', '--instances', 'x'],
@@ -154,9 +154,9 @@ describe('cli', () => {
     const run = jest.fn()
     console.error = jest.fn()
     await runCli(
-      cli('hypergraph')
+      cli<any>('mycli')
         .version('1.0')
-        .option(input('dry-run'))
+        .option(input('dryRun'))
         .option(input('service').string())
         .handle(run),
       ['--service', '--dry-run'],
@@ -171,9 +171,9 @@ describe('cli', () => {
     const run = jest.fn()
     console.error = jest.fn()
     await runCli(
-      cli('hypergraph')
+      cli<any>('mycli')
         .version('1.0')
-        .option(input('dry-run'))
+        .option(input('dryRun'))
         .option(input('service').string())
         .handle(run),
       ['--service='],
@@ -188,9 +188,9 @@ describe('cli', () => {
     const run = jest.fn()
     console.error = jest.fn()
     await runCli(
-      cli('hypergraph')
+      cli<any>('mycli')
         .version('1.0')
-        .option(input('dry-run'))
+        .option(input('dryRun'))
         .option(input('service').string().required())
         .handle(run),
       [],
@@ -202,9 +202,9 @@ describe('cli', () => {
     const run = jest.fn()
     console.error = jest.fn()
     await runCli(
-      cli('hypergraph')
+      cli<any>('mycli')
         .version('1.0')
-        .option(input('dry-run'))
+        .option(input('dryRun'))
         .option(input('service').string())
         .handle(run),
       ['just-an-argument'],
@@ -217,9 +217,9 @@ describe('cli', () => {
     const run = jest.fn()
     console.error = jest.fn()
     await runCli(
-      cli('hypergraph')
+      cli<any>('mycli')
         .version('1.0')
-        .option(input('dry-run'))
+        .option(input('dryRun'))
         .option(input('service').string())
         .handle(run),
       ['--just-an-option'],
@@ -232,7 +232,7 @@ describe('cli', () => {
     const run = jest.fn()
     console.error = jest.fn()
     await runCli(
-      cli('hypergraph')
+      cli<any>('mycli')
         .version('1.0')
         .option(input('type').string().options(['string', 'number']).toInput())
         .handle(run),
@@ -249,7 +249,7 @@ describe('cli', () => {
     const run = jest.fn()
     console.error = jest.fn()
     await runCli(
-      cli('hypergraph').version('1.0').argument(input('package').string().required()).handle(run),
+      cli<any>('mycli').version('1.0').argument(input('package').string().required()).handle(run),
       [],
     )
     expect(run).not.toHaveBeenCalled()
@@ -260,7 +260,7 @@ describe('cli', () => {
     const run = jest.fn()
     console.error = jest.fn()
     await runCli(
-      cli('hypergraph')
+      cli<any>('mycli')
         .version('1.0')
         .argument(input('package').string().required())
         .argument(input('name').string().required())
@@ -275,23 +275,21 @@ describe('cli', () => {
     const run = jest.fn()
     console.error = jest.fn()
     await runCli(
-      cli('hypergraph')
+      cli<any>('mycli')
         .version('1.0')
         .argument(input('package').string().required())
         .argument(input('name').string()),
       ['package1'],
     )
     expect(run).not.toHaveBeenCalled()
-    expect(console.error).toHaveBeenCalledWith(
-      `\nError: Command "hypergraph" is missing a handler\n`,
-    )
+    expect(console.error).toHaveBeenCalledWith(`\nError: Command "mycli" is missing a handler\n`)
   })
 
   test('should parse a command', async () => {
     const run = jest.fn()
     const runInner = jest.fn()
     await runCli(
-      cli('hypergraph')
+      cli('mycli')
         .version('1.0')
         .command(command('command').description('show a command').handle(runInner))
         .handle(run),
@@ -306,7 +304,7 @@ describe('cli', () => {
     const runCommand1 = jest.fn()
     const runCommand2 = jest.fn()
     await runCli(
-      cli('hypergraph')
+      cli('mycli')
         .version('1.0')
         .command(command('command1').description('show a command').handle(runCommand1))
         .command(command('command2').description('show a command').handle(runCommand2))
@@ -322,16 +320,16 @@ describe('cli', () => {
     const run = jest.fn()
     const runInner = jest.fn()
     await runCli(
-      cli('hypergraph')
+      cli<any>('mycli')
         .version('1.0')
         .command(
-          command('command')
+          command<any>('command')
             .description('show a command')
             .option(input('sample'))
             .option(input('instances').number())
             .handle(runInner),
         )
-        .option(input('dry-run'))
+        .option(input('dryRun'))
         .handle(run),
       ['command', '--dry-run', '--sample', '--instances=2'],
     )
@@ -346,7 +344,7 @@ describe('cli', () => {
   test('should show help', async () => {
     const run = jest.fn()
     const help = await runCli(
-      cli('hypergraph')
+      cli<any>('mycli')
         .version('1.0')
         .argument(input('command').description('show a command').toInput())
         .handle(run),
@@ -355,7 +353,7 @@ describe('cli', () => {
     expect(run).not.toHaveBeenCalled()
     expect(trim(help)).toEqual(
       trim(`
-      hypergraph   [command] [--help] [--version]
+      mycli   [command] [--help] [--version]
 
       ARGUMENTS
 
@@ -374,12 +372,12 @@ describe('cli', () => {
     const run = jest.fn()
     const runInner = jest.fn()
     const help = await runCli(
-      cli('hypergraph')
+      cli<any>('mycli')
         .version('1.0')
         .command(
-          command('command')
+          command<any>('command')
             .description('show a command')
-            .option(input('dry-run').description('Do a dry run'))
+            .option(input('dryRun').description('Do a dry run'))
             .option(input('sample').description('Sample input'))
             .option(input('instances').number().description('Number of instances'))
             .handle(runInner)
@@ -392,7 +390,7 @@ describe('cli', () => {
     expect(runInner).not.toHaveBeenCalled()
     expect(trim(help)).toEqual(
       trim(`
-      hypergraph command   [--dry-run] [--sample] [--instances=<number>] [--help] [--version]
+      mycli command   [--dry-run] [--sample] [--instances=<number>] [--help] [--version]
 
       OPTIONS
 

@@ -4,11 +4,15 @@ import configureCommand from './configure/configure'
 import createCommand from './create'
 import indexCommand from './index/index'
 
-const program = cli('builder')
+interface Props {
+  dryRun?: boolean
+}
+
+const program = cli<Props>('builder')
   .version('1.0')
   .command(configureCommand)
   .command(createCommand)
   .command(indexCommand)
-  .option(input('dry-run').description('Execute a sample run'))
+  .option(input('dryRun').description('Execute a sample run'))
 
 runCli(program).catch((e: any) => console.error(e))

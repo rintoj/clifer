@@ -7,6 +7,7 @@ enum Type {
 
 interface Props {
   service: string
+  name: string
   instances?: number
   type?: Type
   dryRun?: boolean
@@ -36,7 +37,7 @@ const program = cli<Props>('create-model')
   )
 
   // add --dry-run flag
-  .option(input('dry-run').description('Do a dry run'))
+  .option(input('dryRun').description('Do a dry run'))
 
   // handle the command
   .handle(run)

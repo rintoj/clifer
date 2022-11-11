@@ -21,6 +21,7 @@ interface Props {
   awsRegion: string
   environment: Environment
   cloud: CloudProvider
+  test?: boolean
 }
 
 async function run(props: Props) {
@@ -31,8 +32,8 @@ export default command<Props>('configure')
   .description('Configure environment for this project')
   .option(input('environment').description('Environment').string().required().options(ENVIRONMENTS))
   .option(input('cloud').description('Cloud provider').string().options(CLOUD_PROVIDER))
-  .option(input('aws-account-id').description('AWS account id').string())
-  .option(input('aws-access-key').description('AWS account access key').string())
-  .option(input('aws-secret').description('AWS account access secret').string())
-  .option(input('aws-region').description('AWS region').string())
+  .option(input('awsAccountId').description('AWS account id').string())
+  .option(input('awsAccessKey').description('AWS account access key').string())
+  .option(input('awsSecret').description('AWS account access secret').string())
+  .option(input('awsRegion').description('AWS region').string())
   .handle(run)

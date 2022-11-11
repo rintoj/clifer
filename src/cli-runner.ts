@@ -22,7 +22,7 @@ function toValues(value: string[]) {
 
 function parseValue(
   value: string | boolean,
-  input: Input<any>,
+  input: Input<any, any>,
   command: Command<any>,
   parentCommands: Command<any>[],
 ) {
@@ -31,9 +31,9 @@ function parseValue(
     case InputType.String:
       if (options?.length && !options.includes(value)) {
         throw new CliError(
-          `Invalid value "${value}" for the input "--${input.name}". You must provide ${toValues(
-            options,
-          )}`,
+          `Invalid value "${value}" for the input "--${
+            input.name as string
+          }". You must provide ${toValues(options)}`,
           command,
           parentCommands,
         )
@@ -46,7 +46,7 @@ function parseValue(
       }
       throw new CliError(
         `Invalid value "${value}" for the input "--${
-          input.name
+          input.name as string
         }". You must provide a ${input.type.toLocaleLowerCase()}`,
         command,
         parentCommands,
@@ -138,8 +138,12 @@ function parseCommand<P>(
 
 function validateMissingArgs(command: Command<any>, props: any, parentCommands: Command<any>[]) {
   for (const input of Object.values(command.inputs)) {
-    if (input.isRequired && typeof props[toCamelCase(input.name)] === 'undefined') {
-      throw new CliError(`Missing a required input "--${input.name}"`, command, parentCommands)
+    if (input.isRequired && typeof props[toCamelCase(input.name as string)] === 'undefined') {
+      throw new CliError(
+        `Missing a required input "--${input.name as string}"`,
+        command,
+        parentCommands,
+      )
     }
   }
   for (const input of command.arguments) {

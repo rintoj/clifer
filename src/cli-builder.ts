@@ -9,7 +9,7 @@ class Cli<T> extends CommandBuilder<T> {
   version(version: string) {
     this.cmd.version = version
     if (!this.cmd.inputs['version']) {
-      this.option(input('version').description('Show version'))
+      this.option(input('version').description('Show version') as any)
     }
     return this
   }

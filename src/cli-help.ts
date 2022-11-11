@@ -80,11 +80,11 @@ function toRequired(content: string, isRequired = true) {
   return isRequired ? `<${content}>` : `[${content}]`
 }
 
-function toInputHelp(input: Command<any> | Input<any>): string[] {
+function toInputHelp(input: Command<any> | Input<any, any>): string[] {
   return [yellow(input.name), input.description ?? '']
 }
 
-function toOptionType(input: Input<any>): string {
+function toOptionType(input: Input<any, any>): string {
   if (input.options?.length) {
     return `=<${input.options?.join('|')}>`
   }
@@ -95,9 +95,9 @@ function toOptionType(input: Input<any>): string {
     : ''
 }
 
-function toOptionHelp(input: Input<any>): string[] {
+function toOptionHelp(input: Input<any, any>): string[] {
   return [
-    yellow(`--${input.name}${toOptionType(input)}`),
+    yellow(`--${input.name as string}${toOptionType(input)}`),
     `${input.isRequired ? red('[Required] ') : ''}${input.description ?? ''}`,
   ]
 }
@@ -106,7 +106,7 @@ function toInputNames(command: Command<any>) {
   const hasInputs = !!Object.values(command.inputs).length
   return hasInputs
     ? extractInputs(command).map(input => {
-        const option = `--${input.name}${toOptionType(input)}`
+        const option = `--${input.name as string}${toOptionType(input)}`
         return yellow(input.isRequired ? option : `[${option}]`)
       })
     : []
@@ -120,15 +120,15 @@ function toInputsHelp(command: Command<any>) {
 }
 
 function toArgumentNames(command: Command<any>) {
-  const commandArgs = command.arguments.filter(i => i.kind === Kind.Input) as Input<any>[]
+  const commandArgs = command.arguments.filter(i => i.kind === Kind.Input) as Input<any, any>[]
   const hasArguments = !!commandArgs.length
   return hasArguments
-    ? commandArgs.map(input => yellow(toRequired(input.name, !!input.isRequired)))
+    ? commandArgs.map(input => yellow(toRequired(input.name as string, !!input.isRequired)))
     : []
 }
 
 function toArgumentsHelp(command: Command<any>) {
-  const commandArgs = command.arguments.filter(isInput) as Input<any>[]
+  const commandArgs = command.arguments.filter(isInput) as Input<any, any>[]
   const hasArguments = !!commandArgs.length
   return hasArguments
     ? [hasArguments ? [gray('ARGUMENTS')] : undefined, ...commandArgs.map(toInputHelp)]

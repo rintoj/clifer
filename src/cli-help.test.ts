@@ -19,10 +19,10 @@ function trim(output: string) {
 
 describe('cli', () => {
   test('should generate a simple cli with no args and options', () => {
-    const help = toHelp(cli('hypergraph').toCommand())
+    const help = toHelp(cli('mycli').toCommand())
     expect(trim(help)).toEqual(
       trim(`
-        hypergraph   [--help]
+        mycli   [--help]
 
         OPTIONS
 
@@ -32,10 +32,10 @@ describe('cli', () => {
   })
 
   test('should generate a simple cli with help', () => {
-    const help = toHelp(cli('hypergraph').toCommand())
+    const help = toHelp(cli('mycli').toCommand())
     expect(trim(help)).toEqual(
       trim(`
-        hypergraph   [--help]
+        mycli   [--help]
 
         OPTIONS
 
@@ -46,7 +46,7 @@ describe('cli', () => {
 
   test('should generate a simple cli with help and options', () => {
     const help = toHelp(
-      cli('hypergraph')
+      cli<any>('mycli')
         .option(input('service-name').description('Name of the service').string())
         .option(input('instances').description('Number of instances').number())
         .option(input('dry-run').description('Do not make changes but run in dry-run mode'))
@@ -54,7 +54,7 @@ describe('cli', () => {
     )
     expect(trim(help)).toEqual(
       trim(`
-        hypergraph   [--service-name=<string>] [--instances=<number>] [--dry-run] [--help]
+        mycli   [--service-name=<string>] [--instances=<number>] [--dry-run] [--help]
 
         OPTIONS
 
@@ -71,7 +71,7 @@ describe('cli', () => {
 
   test('should not add square brackets around required inputs', () => {
     const help = toHelp(
-      cli('hypergraph')
+      cli<any>('mycli')
         .option(input('service-name').description('Name of the service').string().required())
         .option(input('instances').description('Number of instances').number())
         .option(input('dry-run').description('Do not make changes but run in dry-run mode'))
@@ -79,7 +79,7 @@ describe('cli', () => {
     )
     expect(trim(help)).toEqual(
       trim(`
-        hypergraph   --service-name=<string> [--instances=<number>] [--dry-run] [--help]
+        mycli   --service-name=<string> [--instances=<number>] [--dry-run] [--help]
 
         OPTIONS
 
@@ -95,10 +95,10 @@ describe('cli', () => {
   })
 
   test('should generate a simple cli with version and help', () => {
-    const help = toHelp(cli('hypergraph').version('1.0.0').toCommand())
+    const help = toHelp(cli('mycli').version('1.0.0').toCommand())
     expect(trim(help)).toEqual(
       trim(`
-        hypergraph   [--help] [--version]
+        mycli   [--help] [--version]
 
         OPTIONS
 
@@ -111,7 +111,7 @@ describe('cli', () => {
 
   test('should generate a simple cli with arguments, version and help', () => {
     const help = toHelp(
-      cli('hypergraph')
+      cli<any>('mycli')
         .version('1.0.0')
         .argument(input('name').description('Name of the service').string().required())
         .argument(input('service').description('Name of the target service'))
@@ -121,7 +121,7 @@ describe('cli', () => {
     )
     expect(trim(help)).toEqual(
       trim(`
-        hypergraph   <name> [service] [instances] [event] [--help] [--version]
+        mycli   <name> [service] [instances] [event] [--help] [--version]
 
         ARGUMENTS
 
@@ -144,7 +144,7 @@ describe('cli', () => {
 
   test('should generate a simple cli with commands, version and help', () => {
     const help = toHelp(
-      cli('hypergraph')
+      cli<any>('mycli')
         .version('1.0.0')
         .command(command('create').description('Create a module'))
         .command(command('generate').description('Generate data hooks'))
@@ -154,7 +154,7 @@ describe('cli', () => {
     )
     expect(trim(help)).toEqual(
       trim(`
-        hypergraph   <create|generate|index> [--dry-run] [--help] [--version]
+        mycli   <create|generate|index> [--dry-run] [--help] [--version]
 
         COMMANDS
 

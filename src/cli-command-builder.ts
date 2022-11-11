@@ -18,8 +18,8 @@ class CommandBuilderBase<T> {
       name,
       arguments: [],
       inputs: {
-        help: input('help').description('Show help').toInput(),
-      },
+        help: input<{ help: boolean }, any>('help').description('Show help').toInput(),
+      } as any,
     }
   }
 
@@ -28,9 +28,9 @@ class CommandBuilderBase<T> {
     return this
   }
 
-  option<T extends InputValueType>(inputOrBuilder: InputOrBuilder<T>) {
+  option<V extends InputValueType>(inputOrBuilder: InputOrBuilder<T, V>) {
     const input = isInputBuilder(inputOrBuilder) ? inputOrBuilder.toInput() : inputOrBuilder
-    this.cmd.inputs[input.name] = input
+    this.cmd.inputs[input.name as any] = input
     return this
   }
 
@@ -63,7 +63,7 @@ class CommandBuilderWithArguments<T> extends CommandBuilderBase<T> {
     this.cmd = command
   }
 
-  argument<V extends InputValueType>(inputOrBuilder: InputOrBuilder<V>) {
+  argument<V extends InputValueType>(inputOrBuilder: InputOrBuilder<T, V>) {
     const arg = isInputBuilder(inputOrBuilder) ? inputOrBuilder.toInput() : inputOrBuilder
     if (arg.type === InputType.Boolean) {
       arg.type = InputType.String
@@ -83,7 +83,7 @@ export class CommandBuilder<T> extends CommandBuilderBase<T> {
     return new CommandBuilderWithInnerCommands(this.cmd).command(inputOrBuilder)
   }
 
-  argument<V extends InputValueType>(inputOrBuilder: InputOrBuilder<V>) {
+  argument<V extends InputValueType>(inputOrBuilder: InputOrBuilder<T, V>) {
     return new CommandBuilderWithArguments(this.cmd).argument(inputOrBuilder)
   }
 }

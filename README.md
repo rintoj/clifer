@@ -20,39 +20,6 @@ npm install clifer
 
 ## Usage
 
-```js
-import { cli, input, runCli } from 'clifer'
-
-function run(props) {
-  // handle the action here
-  console.log({ props })
-}
-
-const program = cli('create-model')
-  // add an option '--version' to the version of the cli
-  .version('1.0')
-
-  // add --name=<string>
-  .argument(input('name').description('Name of the model').string().required())
-
-  // add --service=<string>
-  .option(input('service').description('Name of the service').string().required())
-
-  // add --dry-run flag
-  .option(input('dry-run').description('Do a dry run'))
-
-  // handle the command
-  .handle(run)
-
-runCli(program).catch(e => console.error(e))
-```
-
-## Auto Generated Help
-
-![TypeScript](./docs/create-model.jpg)
-
-## TypeScript Support
-
 ```ts
 import { cli, input, runCli } from 'clifer'
 
@@ -92,13 +59,15 @@ const program = cli<Props>('create-model')
   )
 
   // add --dry-run flag
-  .option(input('dry-run').description('Do a dry run'))
+  .option(input('dryRun').description('Do a dry run'))
 
   // handle the command
   .handle(run)
 
 runCli(program).catch(e => console.error(e))
 ```
+
+## Auto Generated Help
 
 ![TypeScript](./docs/type-script.jpg)
 
@@ -112,10 +81,18 @@ enum Type {
   js = 'js',
 }
 
-interface CreateCommandProps {
+interface Props {
+  dryRun?: boolean
+}
+
+interface CreateCommandProps extends Props {
   name: string
   type?: Type
-  dryRun?: boolean
+}
+
+interface IndexCommandProps extends Props {
+  name: string
+  publish?: boolean
 }
 
 const createModel = command<CreateCommandProps>('model')
@@ -148,12 +125,6 @@ const createCommand = command('create')
   .command(createRepository)
   .command(createSchema)
 
-interface IndexCommandProps {
-  name: string
-  publish?: boolean
-  dryRun?: boolean
-}
-
 const indexCommand = command<IndexCommandProps>('index')
   .description('Create database index')
   .argument(input('name').description('Name of the file to create').string().required())
@@ -162,11 +133,11 @@ const indexCommand = command<IndexCommandProps>('index')
     // handle action
   })
 
-const program = cli('builder')
+const program = cli<Props>('builder')
   .version('1.0')
   .command(createCommand)
   .command(indexCommand)
-  .option(input('dry-run').description('Execute a sample run'))
+  .option(input('dryRun').description('Execute a sample run'))
 
 runCli(program).catch((e: any) => console.error(e))
 ```
