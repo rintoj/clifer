@@ -271,20 +271,6 @@ describe('cli', () => {
     expect(console.error).toHaveBeenCalledWith(`\nError: Missing a required argument "<name>"\n`)
   })
 
-  test('should throw an error if a command is missing handler', async () => {
-    const run = jest.fn()
-    console.error = jest.fn()
-    await runCli(
-      cli<any>('mycli')
-        .version('1.0')
-        .argument(input('package').string().required())
-        .argument(input('name').string()),
-      ['package1'],
-    )
-    expect(run).not.toHaveBeenCalled()
-    expect(console.error).toHaveBeenCalledWith(`\nError: Command "mycli" is missing a handler\n`)
-  })
-
   test('should parse a command', async () => {
     const run = jest.fn()
     const runInner = jest.fn()
