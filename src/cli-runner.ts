@@ -203,9 +203,7 @@ export async function runCli<T>(
     const initialProps = await parseInitialValues(command, parsedProps)
     const props = await promptAllMissingValues(command, initialProps, commands)
     validateMissingArgs(command, props, commands)
-    if (!command.handler) {
-      throw new CliError(`Command "${inputCommand.name}" is missing a handler`, command, commands)
-    }
+    if (!command.handler) return showCliHelp(command, commands)
     return command.handler(props as any)
   } catch (e) {
     if (e instanceof CliError) {
