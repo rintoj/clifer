@@ -3841,10 +3841,10 @@ mute-stream@~0.0.4:
   resolved "https://registry.yarnpkg.com/mute-stream/-/mute-stream-0.0.8.tgz#1630c42b2251ff81e2a283de96a5497ea92e5e0d"
   integrity sha512-nnbWWOkoWyUsTjKrhgD0dcz22mdkSnpYqbEjIm2nhwhuxlSkpywJmBo8h0ZqJdkp73mb90SssHkN4rsRaBAfAA==
 
-name-util@^1.1.0:
-  version "1.1.0"
-  resolved "https://registry.yarnpkg.com/name-util/-/name-util-1.1.0.tgz#9c64be3f4da1b0701da6c50ddfeb3e0a2dd14a74"
-  integrity sha512-lW6EznWiq+xutPphw47UkQuy+Iz6DwhlqEFSpjxQar4uPl916vZEpa0l/0c8BMdYaNqad0d8VuJ0xRGDNNmW+Q==
+name-util@^1.3.0:
+  version "1.3.0"
+  resolved "https://registry.yarnpkg.com/name-util/-/name-util-1.3.0.tgz#1e881e5c27ea30b0cd953a99665f6cb3a800da07"
+  integrity sha512-oieYa+XKMFXr/ww7KvQBjOxlKY80i9kAGclrl8WkZJm02smYR8IPIc6mV4nKG6ueO3Fz42Oswpr5kyQrPt5ABA==
 
 natural-compare@^1.4.0:
   version "1.4.0"
