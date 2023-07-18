@@ -14,6 +14,7 @@ export async function prompt(...inputOrBuilders: InputOrBuilder<any, any>[]) {
       const isBoolean = input.type === InputType.Boolean
       const isNumber = input.type === InputType.Number
       const isMultiChoice = !!input.choices?.length
+      const choices = [...(input.choices ?? [])].map(i => `${i}`)
       return {
         type: isMultiChoice
           ? 'autocomplete'
@@ -25,7 +26,9 @@ export async function prompt(...inputOrBuilders: InputOrBuilder<any, any>[]) {
         name: toCamelCase(input.name as string),
         message:
           input.promptMessage ?? capitalize(toDashedName(input.name as string).replace(/-/g, ' ')),
-        ...(isMultiChoice ? { choices: [...(input.choices ?? [])].map(i => `${i}`) } : {}),
+        ...(isMultiChoice
+          ? { choices, initial: choices.findIndex(choice => choice === input.default) ?? 0 }
+          : {}),
       }
     }),
   )
