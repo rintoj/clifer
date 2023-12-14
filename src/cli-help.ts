@@ -207,7 +207,7 @@ export function toDocumentation<T>(
   const title = [prefix, command.name].join(' ').trim()
   const indentation = title.split(' ').length
   const titleSize = new Array(indentation).fill('#').join('')
-  const indent = new Array(indentation - 1).fill('>').join('')
+  const indent = new Array(Math.max(0, indentation - 2)).fill('>').join('')
 
   let docs = [
     `${titleSize} ${title}`,
