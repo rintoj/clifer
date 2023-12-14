@@ -1,18 +1,21 @@
 import { gray, green, red, yellow } from 'chalk'
-import { Command, Input, InputType, isCommand, isInput, Kind } from './cli-types'
+import { Command, Input, InputType, Kind, isCommand, isInput } from './cli-types'
 
 const SPACER = '   '
 const NEW_LINE = `\n`
 const AVAILABLE_WIDTH =
   typeof jest !== 'undefined' ? 80 : (process?.stdout?.columns ?? 80) - SPACER.length
+const COMMON_OPTIONS = ['version', 'help', 'doc']
 
-function extractInputs(command: Command<any>) {
-  return Object.values(command.inputs).sort((a, b) => {
-    if (a.name === 'version' || a.name === 'help') return 1
-    if (b.name === 'version' || b.name === 'help') return -1
-    if (a === b) return 0
-    return 1
-  })
+function extractInputs(command: Command<any>, commonOptions = false) {
+  return Object.values(command.inputs)
+    .filter(i => COMMON_OPTIONS.includes(String(i.name)) === commonOptions)
+    .sort((a, b) => {
+      if (COMMON_OPTIONS.includes(String(a.name))) return 1
+      if (COMMON_OPTIONS.includes(String(b.name))) return -1
+      if (a === b) return 0
+      return 1
+    })
 }
 
 function maxNumberOfColumns(...lines: Array<string[]>) {
@@ -34,6 +37,11 @@ function calculateColumnWidth(noOfColumns: number, ...lines: Array<string[]>) {
   })
 }
 
+function generateSpaces(length: number) {
+  if (length < 1) return ''
+  return new Array(length).fill(' ').join('')
+}
+
 function fitToColumn(content: string, widths: number[], index: number) {
   const availableWidth = widths[index]
   const padding = widths.reduce((a, w, i) => a + (i < index ? w : 0), -SPACER.length * 2 - 1)
@@ -50,7 +58,7 @@ function fitToColumn(content: string, widths: number[], index: number) {
   }
   if (currentLine !== '') lines.push(currentLine)
   return lines
-    .map((l, i) => new Array(i === 0 ? 0 : padding).fill(' ').join('') + l.padEnd(availableWidth))
+    .map((l, i) => generateSpaces(i === 0 ? 0 : padding) + l.padEnd(availableWidth))
     .join(NEW_LINE)
 }
 
@@ -112,10 +120,26 @@ function toInputNames(command: Command<any>) {
     : []
 }
 
-function toInputsHelp(command: Command<any>) {
+function toCommonInputNames(command: Command<any>) {
   const hasInputs = !!Object.values(command.inputs).length
   return hasInputs
-    ? [hasInputs ? [gray('OPTIONS')] : undefined, ...extractInputs(command).map(toOptionHelp)]
+    ? extractInputs(command, true).map(input => {
+        const option = `--${input.name as string}${toOptionType(input)}`
+        return yellow(input.isRequired ? option : `[${option}]`)
+      })
+    : []
+}
+
+function toInputsHelp(command: Command<any>) {
+  const inputs = extractInputs(command)
+  const hasInputs = !!inputs.length
+  return hasInputs ? [hasInputs ? [gray('OPTIONS')] : undefined, ...inputs.map(toOptionHelp)] : []
+}
+
+function toCommonInputsHelp(command: Command<any>) {
+  const hasInputs = !!Object.values(command.inputs).length
+  return hasInputs
+    ? [hasInputs ? [gray('COMMON')] : undefined, ...extractInputs(command, true).map(toOptionHelp)]
     : []
 }
 
@@ -147,10 +171,11 @@ function toCommandNames(command: Command<any>) {
   return hasCommands ? commands.map(command => command.name) : []
 }
 
-export function toHelp(command: Command<any>, prefix?: string) {
+export function toHelp(command: Command<any>, prefix?: string, includeCommonInputs?: boolean) {
   const commands = toCommandsHelp(command)
   const args = toArgumentsHelp(command)
   const inputs = toInputsHelp(command)
+  const commonInputs = includeCommonInputs ? toCommonInputsHelp(command) : []
 
   return formatCommand(
     ...toColumn([
@@ -160,15 +185,48 @@ export function toHelp(command: Command<any>, prefix?: string) {
           commands.length ? toRequired(toCommandNames(command).join('|')) : '',
           args.length ? toArgumentNames(command).join(' ') : '',
           inputs.length ? toInputNames(command).join(' ') : '',
+          includeCommonInputs ? toCommonInputNames(command).join(' ') : '',
         ),
       ],
     ]),
-    ...toColumn([...commands, ...args, ...inputs].filter(i => !!i) as any),
+    ...toColumn([...commands, ...args, ...inputs, ...commonInputs].filter(i => !!i) as any),
   )
 }
 
 export function showHelp<T>(command: Command<T>, prefix?: string) {
-  const help = toHelp(command, prefix)
+  const help = toHelp(command, prefix, true)
   console.log(help)
   return help
+}
+
+export function toDocumentation<T>(
+  command: Command<T>,
+  prefix?: string,
+  includeCommonInputs?: boolean,
+) {
+  const title = [prefix, command.name].join(' ').trim()
+  const indentation = title.split(' ').length
+  const titleSize = new Array(indentation).fill('#').join('')
+  const indent = new Array(indentation - 1).fill('>').join('')
+
+  let docs = [
+    `${titleSize} ${title}`,
+    ...(command.description ? ['', command.description, ''] : []),
+    '```sh',
+    ...toHelp(command, prefix, includeCommonInputs).split('\n'),
+    '```',
+    '',
+  ].map(i => `${indent}${i}`)
+  for (const subcommand of command.arguments.filter(arg => arg.kind === Kind.Command)) {
+    docs = docs.concat(
+      toDocumentation(subcommand as Command<any>, `${prefix} ${command.name}`.trim(), false),
+    )
+  }
+  return docs
+}
+
+export function showDocumentation<T>(command: Command<T>, prefix?: string) {
+  const docs = toDocumentation(command, prefix, true).join('\n')
+  console.log(docs)
+  return docs
 }

@@ -11,7 +11,7 @@ export function isCommandBuilder<T>(cmd: CommandOrBuilder<T>): cmd is CommandBui
 
 export function allInputs<T>(cmd: Command<T>): Input<any, any>[] {
   return [...cmd.arguments, ...Object.values(cmd.inputs).filter(isInput)].filter(
-    i => !['version', 'help'].includes(i.name as string),
+    i => !['version', 'help', 'doc'].includes(i.name as string),
   ) as any
 }
 
@@ -25,6 +25,7 @@ class CommandBuilderBase<T> {
       arguments: [],
       inputs: {
         help: input<{ help: boolean }, any>('help').description('Show help').toInput(),
+        doc: input<{ doc: boolean }, any>('doc').description('Generate documentation').toInput(),
       } as any,
     }
   }
@@ -62,8 +63,10 @@ class CommandBuilderWithInnerCommands<T> extends CommandBuilderBase<T> {
   }
 
   command(commandOrBuilder: CommandOrBuilder<any>) {
-    const arg = isCommandBuilder(commandOrBuilder) ? commandOrBuilder.toCommand() : commandOrBuilder
-    this.cmd.arguments.push({ ...arg, inputs: { ...this.cmd.inputs, ...arg.inputs } })
+    const command = isCommandBuilder(commandOrBuilder)
+      ? commandOrBuilder.toCommand()
+      : commandOrBuilder
+    this.cmd.arguments.push({ ...command, inputs: { ...this.cmd.inputs, ...command.inputs } })
     return this
   }
 }

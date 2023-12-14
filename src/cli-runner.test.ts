@@ -409,17 +409,11 @@ describe('cli', () => {
     expect(run).not.toHaveBeenCalled()
     expect(trim(help)).toEqual(
       trim(`
-      mycli   [command] [--help] [--version]
+      mycli   [command]
 
       ARGUMENTS
 
       command     show a command
-
-      OPTIONS
-
-      --help      Show help
-
-      --version   Show version
     `),
     )
   })
@@ -446,7 +440,7 @@ describe('cli', () => {
     expect(runInner).not.toHaveBeenCalled()
     expect(trim(help)).toEqual(
       trim(`
-      mycli command   [--dry-run] [--sample] [--instances=<number>] [--help] [--version]
+      mycli command   [--dry-run] [--sample] [--instances=<number>]
 
       OPTIONS
 
@@ -455,10 +449,6 @@ describe('cli', () => {
       --sample               Sample input
 
       --instances=<number>   Number of instances
-
-      --help                 Show help
-
-      --version              Show version
     `),
     )
   })

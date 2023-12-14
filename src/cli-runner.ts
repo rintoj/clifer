@@ -1,13 +1,14 @@
 import { red, yellow } from 'chalk'
 import { toCamelCase } from 'name-util'
-import { allInputs, CommandOrBuilder, isCommandBuilder } from './cli-command-builder'
+import { CommandOrBuilder, allInputs, isCommandBuilder } from './cli-command-builder'
 import { CliError } from './cli-error'
-import { showHelp, toHelp } from './cli-help'
+import { showDocumentation, showHelp, toDocumentation, toHelp } from './cli-help'
 import { prompt } from './cli-prompt'
 import { Command, Input, InputType, isCommand, isInput } from './cli-types'
 
 interface Props {
   help?: boolean
+  doc?: boolean
   version?: boolean
 }
 
@@ -126,7 +127,7 @@ function parseCommand<P>(
       argIndex + 1,
       {
         ...props,
-        [toCamelCase(cmdArg.name)]: parseValue(currentArg, cmdArg, command, parentCommands),
+        [toCamelCase(String(cmdArg.name))]: parseValue(currentArg, cmdArg, command, parentCommands),
       },
       parentCommands,
     )
@@ -165,9 +166,13 @@ function validateMissingArgs(command: Command<any>, props: any, parentCommands: 
     if (
       isInput(input) &&
       input.isRequired &&
-      typeof props[toCamelCase(input.name)] === 'undefined'
+      typeof props[toCamelCase(String(input.name))] === 'undefined'
     ) {
-      throw new CliError(`Missing a required argument "<${input.name}>"`, command, parentCommands)
+      throw new CliError(
+        `Missing a required argument "<${String(input.name)}>"`,
+        command,
+        parentCommands,
+      )
     }
   }
 }
@@ -175,6 +180,13 @@ function validateMissingArgs(command: Command<any>, props: any, parentCommands: 
 function showCliHelp(command: Command<any>, commands: Command<any>[]) {
   const prefix = commands.map(({ name }) => name).join(' ')
   return typeof jest !== 'undefined' ? toHelp(command, prefix) : showHelp(command, prefix)
+}
+
+function showDoc(command: Command<any>, commands: Command<any>[]) {
+  const prefix = commands.map(({ name }) => name).join(' ')
+  return typeof jest !== 'undefined'
+    ? toDocumentation(command, prefix).join('\n')
+    : showDocumentation(command, prefix)
 }
 
 async function parseInitialValues(command: Command<any>, parsedProps: any) {
@@ -200,6 +212,7 @@ export async function runCli<T>(
     const [command, parsedProps, commands] = parseCommand<Props>(inputCommand, args)
     if (parsedProps.version) return console.log(inputCommand.version ?? 'Unknown')
     if (parsedProps.help) return showCliHelp(command, commands)
+    if (parsedProps.doc) return showDoc(command, commands)
     const initialProps = await parseInitialValues(command, parsedProps)
     const props = await promptAllMissingValues(command, initialProps, commands)
     validateMissingArgs(command, props, commands)
