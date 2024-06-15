@@ -218,7 +218,7 @@ export async function runCli<T>(
     const props = await promptAllMissingValues(command, initialProps, commands)
     validateMissingArgs(command, props, commands)
     if (!command.handler) return showCliHelp(command, commands)
-    await command.handler(props as any)
+    return await command.handler(props as any)
   } catch (e) {
     if (e instanceof CliError) {
       console.error(red(`\nError: ${e.message}\n`))
