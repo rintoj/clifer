@@ -1,8 +1,8 @@
-# clifer
+# Clifer
 
 [![semantic-release](https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg)](https://github.com/semantic-release/semantic-release)
 
-A light weight library for building beautiful command line interfaces for NodeJS applications
+A lightweight library for building beautiful command-line interfaces for NodeJS applications.
 
 ## Install
 
@@ -20,6 +20,8 @@ npm install clifer
 
 ## Usage
 
+Create `src/cli.ts` with the following content:
+
 ```ts
 import { cli, input, runCli } from 'clifer'
 
@@ -36,41 +38,133 @@ interface Props {
 }
 
 function run(props: Props) {
-  // handle the action here
+  // Handle the action here
   console.log({ props })
 }
 
 const program = cli<Props>('create-model')
-  // add an option '--version' to the version of the cli
+  // Add an option '--version' to the version of the CLI
   .version('1.0')
 
-  // add a position input of type string and prompt if not passed on
+  // Add a positional input of type string and prompt if not provided
   .argument(input('name').description('Name of the model').string().required().prompt())
 
-  // add --service=<string>
+  // Add --service=<string>
   .option(input('service').description('Name of the service').string().required())
 
-  // add --instances=<number>
+  // Add --instances=<number>
   .option(input('instances').description('Number of instances').number().default(2))
 
-  // add --type=[api|subscriber]
+  // Add --type=[api|subscriber]
   .option(
     input('type').description('Type of the model').string().options([Type.api, Type.subscriber]),
   )
 
-  // add --dry-run flag
-  .option(input('dryRun').description('Do a dry run'))
+  // Add --dry-run flag
+  .option(input('dryRun').description('Perform a dry run'))
 
-  // load values from external source or at runtime (eg. from a file)
+  // Load values from an external source or at runtime (e.g., from a file)
   .load(async (props: Partial<T>) => readJSONAsync('./env.json'))
 
-  // handle the command
+  // Handle the command
   .handle(run)
 
 runCli(program).catch(e => console.error(e))
 ```
 
-## Auto Generated Help
+## Configure Project
+
+To make an npm package executable, follow these steps:
+
+1. **Add a `bin` field to `package.json`:** This field specifies the executable files and the
+   command names.
+2. **Create the executable file:** The file should start with a shebang (`#!`) that specifies the
+   path to the Node.js executable.
+3. **Ensure the file has execute permissions:** Make the file executable by setting the correct
+   permissions.
+
+Here's a step-by-step guide:
+
+### Step 1: Add `bin` Field to `package.json`
+
+In your `package.json`, add a `bin` field that maps command names to executable files. For example:
+
+```json
+{
+  "name": "your-package-name",
+  "version": "1.0.0",
+  "bin": {
+    "your-command": "bin/cli"
+  },
+  ...
+}
+```
+
+### Step 2: Create the Executable File
+
+Create the executable JavaScript file (`bin/cli`) and start it with a shebang:
+
+```javascript
+#!/usr/bin/env node
+
+const { spawn } = require('child_process')
+const { resolve } = require('path')
+const cli = resolve(__dirname, '..', 'dist', 'cli.js')
+const args = process.argv.slice(2).join(' ')
+const cmd = `${cli} ${args}`
+const child = spawn('node', cmd.split(' '), {
+  detached: false,
+  stdio: 'inherit',
+  cwd: process.cwd(),
+})
+child.on('exit', function (code, signal) {
+  process.exit(code)
+})
+```
+
+### Step 3: Ensure the File has Execute Permissions
+
+Make the file executable by setting the correct permissions. Run the following command in your
+terminal:
+
+```sh
+chmod +x bin/cli
+```
+
+### Step 4: Install the Package Globally (Optional)
+
+If you want to test the command globally, you can install your package globally:
+
+```sh
+npm install -g .
+```
+
+### Step 5: Run Your Command
+
+After following the above steps, you should be able to run your command from the terminal:
+
+```sh
+your-command
+```
+
+### Testing the Package Locally
+
+Instead of installing globally, you can also link the package locally for testing:
+
+```sh
+npm link
+```
+
+Now you can run the `your-command` command:
+
+```sh
+your-command
+```
+
+By following these steps, you can make your npm package executable and create your own command-line
+tools.
+
+## Auto-Generated Help
 
 ![TypeScript](./docs/type-script.jpg)
 
@@ -103,23 +197,23 @@ const createModel = command<CreateCommandProps>('model')
   .argument(input('name').description('Name of the model').string().required())
   .option(input('type').description('Type of the model').string().options([Type.ts, Type.js]))
   .handle((props: CreateCommandProps) => {
-    // handle action
+    // Handle action
   })
 
 const createRepository = command<CreateCommandProps>('repository')
   .description('Create a repository')
-  .argument(input('name').description('Name of the model').string().required())
-  .option(input('type').description('Type of the model').string().options([Type.ts, Type.js]))
+  .argument(input('name').description('Name of the repository').string().required())
+  .option(input('type').description('Type of the repository').string().options([Type.ts, Type.js]))
   .handle((props: CreateCommandProps) => {
-    // handle action
+    // Handle action
   })
 
 const createSchema = command<CreateCommandProps>('schema')
   .description('Create a schema file')
-  .argument(input('name').description('Name of the model').string().required())
-  .option(input('type').description('Type of the model').string().options([Type.ts, Type.js]))
+  .argument(input('name').description('Name of the schema').string().required())
+  .option(input('type').description('Type of the schema').string().options([Type.ts, Type.js]))
   .handle((props: CreateCommandProps) => {
-    // handle action
+    // Handle action
   })
 
 const createCommand = command('create')
@@ -131,9 +225,9 @@ const createCommand = command('create')
 const indexCommand = command<IndexCommandProps>('index')
   .description('Create database index')
   .argument(input('name').description('Name of the file to create').string().required())
-  .option(input('publish').description('Should publish index'))
+  .option(input('publish').description('Publish the index'))
   .handle((props: IndexCommandProps) => {
-    // handle action
+    // Handle action
   })
 
 const program = cli<Props>('builder')
@@ -145,20 +239,20 @@ const program = cli<Props>('builder')
 runCli(program).catch((e: any) => console.error(e))
 ```
 
-![create](./docs/create.jpg)
+![Create](./docs/create.jpg)
 
-## Use prompt
+## Use Prompt
 
 ```ts
 import { input, prompt } from 'clifer'
 
-// yes/no confirmation
+// Yes/No confirmation
 const { overwrite } = await prompt(
-  input('overwrite').description('Should overwrite?').prompt('Should overwrite?'),
+  input('overwrite').description('Overwrite existing files?').prompt('Should overwrite?'),
 )
 console.log({ overwrite })
 
-// string prompt
+// String prompt
 const { projectName } = await prompt(
   input('projectName')
     .description('Name of the project')
@@ -167,7 +261,7 @@ const { projectName } = await prompt(
 )
 console.log({ projectName })
 
-// string prompt with auto complete
+// String prompt with auto-complete
 const { environment } = await prompt(
   input('environment')
     .description('Environment')
@@ -177,13 +271,13 @@ const { environment } = await prompt(
 )
 console.log({ environment })
 
-// number prompt
+// Number prompt
 const { port } = await prompt(
   input('port').description('Server port').number().prompt('Enter port'),
 )
 console.log({ port })
 
-// number prompt with choices
+// Number prompt with choices
 const { diskSize } = await prompt(
   input('diskSize')
     .description('Disk size to use the cloud')
@@ -193,7 +287,7 @@ const { diskSize } = await prompt(
 )
 console.log({ diskSize })
 
-// multiple inputs together
+// Multiple inputs together
 const output = await prompt(
   input('firstName').description('First name').string().prompt(),
   input('lastName').description('Last name').string().prompt(),
@@ -204,11 +298,64 @@ console.log(output)
 
 ![Prompt](./docs/prompt.jpg)
 
+## Error Handling
+
+Use the `CliExpectedError` class to throw errors for validation issues and configuration errors,
+ensuring that Clifer displays a clear error message without a stack trace.
+
+```ts
+import { CliExpectedError } from 'clifer'
+
+throw new CliExpectedError('Missing a required argument "--arg"')
+```
+
+Here are additional sections that are commonly found in open-source project documentation:
+
+## Contributing
+
+Contributions are welcome! If you'd like to contribute to Clifer, please follow these steps:
+
+1. Fork the repository.
+2. Create a new branch (`git checkout -b feature/YourFeature`).
+3. Commit your changes (`git commit -m 'Add some feature'`).
+4. Push to the branch (`git push origin feature/YourFeature`).
+5. Open a pull request.
+
+Please ensure your code adheres to our coding standards and includes tests where applicable.
+
+## License
+
+This project is licensed under the MIT License. See the [LICENSE](./LICENSE) file for details.
+
+## Code of Conduct
+
+To ensure a welcoming environment, please follow our [Code of Conduct](./CODE_OF_CONDUCT.md).
+
+## Changelog
+
+See the [Changelog](https://github.com/rintoj/clifer/releases) for a detailed history of changes to
+the project.
+
+If you encounter any issues or have any questions, feel free to open an issue on GitHub.
+
+## FAQ
+
+**Q: How do I install Clifer?** A: You can install Clifer using Yarn or NPM. See the
+[Install](#install) section for details.
+
+**Q: How do I create a command-line tool with Clifer?** A: Refer to the [Usage](#usage) section for
+a step-by-step guide on creating a command-line tool.
+
+**Q: How can I contribute to Clifer?** A: See the [Contributing](#contributing) section for
+instructions on how to contribute to the project.
+
+Feel free to modify or expand these sections to better fit your project's needs.
+
 ## Automatic Release
 
-Here is an example of the release type that will be done based on a commit messages:
+Here is an example of the release type based on commit messages:
 
-| Commit message      | Release type          |
+| Commit Message      | Release Type          |
 | ------------------- | --------------------- |
 | fix: [comment]      | Patch Release         |
 | feat: [comment]     | Minor Feature Release |

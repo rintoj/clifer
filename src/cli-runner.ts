@@ -5,6 +5,7 @@ import { CliError } from './cli-error'
 import { showDocumentation, showHelp, toDocumentation, toHelp } from './cli-help'
 import { prompt } from './cli-prompt'
 import { Command, Input, InputType, isCommand, isInput } from './cli-types'
+import { CliExpectedError } from './cli-expected-error'
 
 interface Props {
   help?: boolean
@@ -217,12 +218,17 @@ export async function runCli<T>(
     const props = await promptAllMissingValues(command, initialProps, commands)
     validateMissingArgs(command, props, commands)
     if (!command.handler) return showCliHelp(command, commands)
-    return command.handler(props as any)
+    await command.handler(props as any)
   } catch (e) {
     if (e instanceof CliError) {
       console.error(red(`\nError: ${e.message}\n`))
       const commandText = [...e.parentCommands, e.command].map(c => c.name).join(' ')
       return console.log(yellow(`Run "${commandText} --help" to see help`))
+    }
+    if (e instanceof CliExpectedError) {
+      console.log('')
+      console.error(red(`ERROR: ${e.message}`))
+      process.exit(1)
     }
     throw e
   }
