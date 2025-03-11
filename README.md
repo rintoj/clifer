@@ -109,10 +109,9 @@ Create the executable JavaScript file (`bin/cli`) and start it with a shebang:
 
 const { spawn } = require('child_process')
 const { resolve } = require('path')
-const cli = resolve(__dirname, '..', 'dist', 'cli.js')
-const args = process.argv.slice(2).join(' ')
-const cmd = `${cli} ${args}`
-const child = spawn('node', cmd.split(' '), {
+const cli = resolve(__dirname, '..', 'dist', 'index.js')
+const args = process.argv.slice(2)
+const child = spawn('node', [cli, ...args], {
   detached: false,
   stdio: 'inherit',
   cwd: process.cwd(),
