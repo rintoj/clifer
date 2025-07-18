@@ -45,14 +45,48 @@ export default command<Props>('init')
         [name]: 'bin/cli',
       },
       scripts: {
-        build: 'bun build ./src/cli.ts --outdir ./dist --target bun',
-        start: 'bun run ./src/cli.ts',
+        start: 'bun build src/cli.ts --target=bun --outdir=dist --watch',
+        build: 'rimraf dist; bun build src/cli.ts --target=bun --outdir=dist',
+      },
+      devDependencies: {
+        '@types/fs-extra': '^11.0.4',
+        '@types/markdown-it': '^14.1.2',
+        '@types/node': '^22.10.2',
+        '@types/shelljs': '^0.8.15',
+        rimraf: '^6.0.1',
       },
       keywords: [],
       author: '',
       license: 'ISC',
     }
-    fs.writeFileSync(path.join(projectPath, 'package.json'), JSON.stringify(packageJsonContent, null, 2))
+    fs.writeFileSync(
+      path.join(projectPath, 'package.json'),
+      JSON.stringify(packageJsonContent, null, 2),
+    )
+
+    const tsconfigContent = {
+      compilerOptions: {
+        target: 'es2016',
+        jsx: 'preserve',
+        experimentalDecorators: true,
+        emitDecoratorMetadata: true,
+        module: 'commonjs',
+        outDir: './dist',
+        esModuleInterop: true,
+        forceConsistentCasingInFileNames: true,
+        strict: true,
+        skipLibCheck: true,
+      },
+    }
+    fs.writeFileSync(
+      path.join(projectPath, 'tsconfig.json'),
+      JSON.stringify(tsconfigContent, null, 2),
+    )
+
+    fs.writeFileSync(
+      path.join(projectPath, '.gitignore'),
+      ['node_modules', 'dist/', '.DS_Store'].join('\n'),
+    )
 
     // Create bin/cli executable
     const binDirPath = path.join(projectPath, 'bin')
