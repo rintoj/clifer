@@ -6,7 +6,11 @@
   "repository": "https://github.com/rintoj/clifer.git",
   "author": "Rinto Jose <rintoj@gmail.com>",
   "license": "MIT",
+  "bin": {
+    "clifer": "bin/cli"
+  },
   "scripts": {
+    "build:cli": "rimraf dist; bun build src/cli.ts --target=bun --outdir=dist",
     "build": "rimraf lib && tsc",
     "test": "jest",
     "lint": "eslint --fix && tsc -p . --noEmit && yarn prettier",

@@ -1,0 +1,16 @@
+#!/usr/bin/env bun
+
+const { spawn } = await import('child_process')
+const { resolve } = await import('path')
+const os = await import('os')
+const cli = resolve(__dirname, '..', 'dist', 'cli.js')
+const args = process.argv.slice(2)
+const bunPath = resolve(os.homedir(), '.bun', 'bin', 'bun')
+const child = spawn(bunPath, [cli, ...args], {
+  detached: false,
+  stdio: 'inherit',
+  cwd: process.cwd(),
+})
+child.on('exit', (code, signal) => {
+  process.exit(code)
+})
