@@ -6657,9 +6657,91 @@ Error: ${e.message}
 }
 
 // src/commands/init.command.ts
-var init_command_default = command("init").handle(async () => {
-  console.log("Initializing the project...");
-  console.log("Project initialized successfully!");
+import * as fs from "fs";
+import * as path from "path";
+var init_command_default = command("init").argument(input("name").description("Name of the project to initialize").string().required()).handle(async ({ name }) => {
+  console.log(`Initializing new project '${name}'...`);
+  const projectPath = path.resolve(process.cwd(), name);
+  if (fs.existsSync(projectPath)) {
+    const packageJsonPath = path.join(projectPath, "package.json");
+    if (fs.existsSync(packageJsonPath)) {
+      try {
+        const packageJsonContent2 = JSON.parse(fs.readFileSync(packageJsonPath, "utf-8"));
+        if (packageJsonContent2.bin) {
+          console.error(`Error: Project '${name}' is already initialized.`);
+          process.exit(1);
+        }
+      } catch (error) {
+        console.error("Error parsing package.json:", error);
+        process.exit(1);
+      }
+    }
+  } else {
+    fs.mkdirSync(projectPath, { recursive: true });
+  }
+  const packageJsonContent = {
+    name,
+    version: "1.0.0",
+    description: "",
+    main: "dist/cli.js",
+    bin: {
+      [name]: "bin/cli"
+    },
+    scripts: {
+      build: "bun build ./src/cli.ts --outdir ./dist --target bun",
+      start: "bun run ./src/cli.ts"
+    },
+    keywords: [],
+    author: "",
+    license: "ISC"
+  };
+  fs.writeFileSync(path.join(projectPath, "package.json"), JSON.stringify(packageJsonContent, null, 2));
+  const binDirPath = path.join(projectPath, "bin");
+  fs.mkdirSync(binDirPath, { recursive: true });
+  const cliExecutableContent = `#!/usr/bin/env bun
+
+const { spawn } = await import('child_process')
+const { resolve } = await import('path')
+const os = await import('os')
+
+const cli = resolve(__dirname, '..', 'dist', 'cli.js')
+const args = process.argv.slice(2)
+const bunPath = resolve(os.homedir(), '.bun', 'bin', 'bun')
+
+const child = spawn(bunPath, [cli, ...args], {
+  detached: false,
+  stdio: 'inherit',
+  cwd: process.cwd(),
+})
+
+child.on('exit', (code, signal) => {
+  process.exit(code)
+})
+`;
+  const cliExecutablePath = path.join(binDirPath, "cli");
+  fs.writeFileSync(cliExecutablePath, cliExecutableContent);
+  fs.chmodSync(cliExecutablePath, 493);
+  const srcDirPath = path.join(projectPath, "src");
+  const commandsDirPath = path.join(srcDirPath, "commands");
+  fs.mkdirSync(commandsDirPath, { recursive: true });
+  const cliTsContent = `#!/usr/bin/env bun
+console.log('Hello from the new CLI!')`;
+  fs.writeFileSync(path.join(srcDirPath, "cli.ts"), cliTsContent);
+  const initCommandTsContent = `import { command } from '../cli-command-builder'
+import { input } from '../cli-input-builder'
+
+interface Props {
+  name: string
+}
+
+export default command<Props>('init')
+  .argument(input('name').description('Name of the project to initialize').string().required())
+  .handle(async ({ name }) => {
+    console.log('Init command executed in new project!', name)
+  })
+`;
+  fs.writeFileSync(path.join(commandsDirPath, "init.command.ts"), initCommandTsContent);
+  console.log("\u2705 Project initialized successfully!");
 });
 
 // src/cli.ts
