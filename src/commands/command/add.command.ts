@@ -99,10 +99,10 @@ function importCommand(path: string, command: string) {
     .map(line => line.match(/\.command\(([a-zA-Z0-9_]+)\)/))
     .reduce((lastIdx, match, idx) => (match ? idx : lastIdx), -1)
   const lastDescriptionIndex = lines
-    .map(line => line.match(/\.description\(([a-zA-Z0-9_]+)\)/))
+    .map(line => line.match(/\.description\((.+)\)/))
     .reduce((lastIdx, match, idx) => (match ? idx : lastIdx), -1)
   const lastVersionIndex = lines
-    .map(line => line.match(/\.version\(([a-zA-Z0-9_]+)\)/))
+    .map(line => line.match(/\.version\((.+)\)/))
     .reduce((lastIdx, match, idx) => (match ? idx : lastIdx), -1)
 
   const lastLine =
