@@ -1,11 +1,11 @@
 import { red, yellow } from 'chalk'
 import { toCamelCase } from 'name-util'
-import { CommandOrBuilder, allInputs, isCommandBuilder } from './cli-command-builder'
+import { allInputs, type CommandOrBuilder, isCommandBuilder } from './cli-command-builder'
 import { CliError } from './cli-error'
+import { CliExpectedError } from './cli-expected-error'
 import { showDocumentation, showHelp, toDocumentation, toHelp } from './cli-help'
 import { prompt } from './cli-prompt'
-import { Command, Input, InputType, isCommand, isInput } from './cli-types'
-import { CliExpectedError } from './cli-expected-error'
+import { type Command, type Input, InputType, isCommand, isInput } from './cli-types'
 
 interface Props {
   help?: boolean
@@ -89,7 +89,10 @@ function parseInput<P>(
       command,
       args,
       argIndex + 2,
-      { ...props, [toCamelCase(option)]: parseValue(nextValue, input, command, parentCommands) },
+      {
+        ...props,
+        [toCamelCase(option)]: parseValue(nextValue, input, command, parentCommands),
+      },
       parentCommands,
     )
   }
@@ -97,7 +100,10 @@ function parseInput<P>(
     command,
     args,
     argIndex + 1,
-    { ...props, [toCamelCase(option)]: parseValue(value, input, command, parentCommands) },
+    {
+      ...props,
+      [toCamelCase(option)]: parseValue(value, input, command, parentCommands),
+    },
     parentCommands,
   )
 }
