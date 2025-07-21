@@ -121,12 +121,31 @@ function findFiles(entryFile: string, parentCommands: string[]) {
     const commands = findCommandsFromFile(entryFile)
     if (!commands[parentCommand]) {
       console.error(`Command "${parentCommand}" not found in entry file: ${entryFile}`)
+      console.log(addCommand(entryFile, parentCommand))
       return
     }
     files.push(commands[parentCommand])
     entryFile = commands[parentCommand]
   }
   return files
+}
+
+function addCommand(path: string, command: string) {
+  const content = fs.readFileSync(path, 'utf-8')
+  const lines = content.split('\n')
+  const lastImportIndex = lines
+    .map(line => line.match(/import .+ from .+$/))
+    .reduce((lastIdx, match, idx) => (match ? idx : lastIdx), -1)
+  const lastCommandIndex = lines
+    .map(line => line.match(/\.command\(([a-zA-Z0-9_]+)\)/))
+    .reduce((lastIdx, match, idx) => (match ? idx : lastIdx), -1)
+  return [
+    ...lines.slice(0, lastImportIndex + 1),
+    `import ${command} from './${command}/${command}.command'`,
+    ...lines.slice(lastImportIndex + 1, lastCommandIndex + 1),
+    `  .command(${command})`,
+    ...lines.slice(lastCommandIndex + 1),
+  ].join('\n')
 }
 
 export default command<Props>('add')
