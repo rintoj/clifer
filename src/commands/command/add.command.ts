@@ -92,11 +92,14 @@ function modifyFiles(entryFile: string, parentCommands: string[]) {
 function importCommand(path: string, command: string) {
   const content = fs.readFileSync(path, 'utf-8')
   const lines = content.split('\n')
-  const lastImportIndex = lines
+  const addImportAt = lines
     .map(line => line.match(/import .+ from .+$/))
     .reduce((lastIdx, match, idx) => (match ? idx : lastIdx), -1)
   const lastCommandIndex = lines
-    .map(line => line.match(/\.command\(([a-zA-Z0-9_]+)\)/))
+    .map(line => line.match(/\.command\(([.+]+)\)/))
+    .reduce((lastIdx, match, idx) => (match ? idx : lastIdx), -1)
+  const lastArgumentIndex = lines
+    .map(line => line.match(/\.argument\((.+)\)/))
     .reduce((lastIdx, match, idx) => (match ? idx : lastIdx), -1)
   const lastDescriptionIndex = lines
     .map(line => line.match(/\.description\((.+)\)/))
@@ -105,28 +108,30 @@ function importCommand(path: string, command: string) {
     .map(line => line.match(/\.version\((.+)\)/))
     .reduce((lastIdx, match, idx) => (match ? idx : lastIdx), -1)
 
-  const lastLine =
+  const addCommandAt =
     lastCommandIndex > -1
       ? lastCommandIndex
-      : lastDescriptionIndex > -1
-      ? lastDescriptionIndex
+      : lastArgumentIndex > -1
+      ? lastArgumentIndex
       : lastVersionIndex > -1
       ? lastVersionIndex
-      : lastImportIndex
+      : lastDescriptionIndex > -1
+      ? lastDescriptionIndex
+      : addImportAt
 
   const updatedContent = [
-    ...lines.slice(0, lastImportIndex + 1),
+    ...lines.slice(0, addImportAt + 1),
     `import ${command} from './${command}/${command}.command'`,
-    ...lines.slice(lastImportIndex + 1, lastLine + 1),
+    ...lines.slice(addImportAt + 1, addCommandAt + 1),
     `  .command(${command})`,
-    ...lines.slice(lastLine + 1),
+    ...lines.slice(addCommandAt + 1),
   ].join('\n')
   console.log(`\n-----\n\n${path}:\n${updatedContent}`)
   fs.writeFileSync(path, updatedContent)
 }
 
 function addParentCommandFile(path: string, command: string) {
-  const content = `import { command, input } from 'clifer'
+  const content = `import { command } from 'clifer'
 
 export default command('${command}')
   .description('Description of the command')
