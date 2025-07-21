@@ -1,6 +1,6 @@
 {
   "name": "clifer",
-  "version": "0.0.0-development",
+  "version": "1.2.3",
   "description": "A light weight library for building command line interface for NodeJS applications",
   "main": "lib/index.js",
   "repository": "https://github.com/rintoj/clifer.git",
