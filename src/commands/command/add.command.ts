@@ -128,10 +128,6 @@ function importCommand(path: string, command: string) {
 function addParentCommandFile(path: string, command: string) {
   const content = `import { command, input } from 'clifer'
 
-interface Props {
-  arg: string
-}
-
 export default command('${command}')
   .description('Description of the command')
 `
@@ -149,7 +145,7 @@ interface Props {
   arg: string
 }
 
-export default command('${command}')
+export default command<Props>('${command}')
   .description('Description of the command')
   .argument(input('arg').description('Description of the argument').string().required())
   .handle(async ({ arg }) => {
