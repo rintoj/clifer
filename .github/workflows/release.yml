@@ -14,6 +14,10 @@ jobs:
       - uses: actions/setup-node@v1
         with:
           node-version: '22.x'
+      - name: Install Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: 'latest'
       - run: yarn
       - run: yarn run lint
       - run: yarn run test
