@@ -64,8 +64,6 @@ Add a subcommand:
 bunx clifer command add [parent-command]/[subcommand-name]
 ```
 
----
-
 ## 📖 Usage Guide
 
 Here’s how to use Clifer to build a command. Create a file, for example `src/cli.ts`:
@@ -216,8 +214,6 @@ async function runPrompts() {
 runPrompts()
 ```
 
----
-
 ## 🚨 Error Handling
 
 For expected errors, like invalid user input or configuration issues, throw a `CliExpectedError`.
@@ -299,8 +295,6 @@ npm link
 your-command --help
 ```
 
----
-
 ## 🤝 Contributing
 
 Contributions are what make the open-source community such an amazing place to learn, inspire, and
@@ -323,8 +317,6 @@ To ensure a welcoming and inclusive environment, please read and follow our Code
 ## 📋 Changelog
 
 See the Changelog for a detailed history of changes to the project.
-
----
 
 ## 🤔 FAQ
 
