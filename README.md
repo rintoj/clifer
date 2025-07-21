@@ -40,7 +40,7 @@ Clifer provides a handy initializer to get your project up and running in second
 Make sure you have Bun installed, then run:
 
 ```bash
-bunx clifer init your-project-name
+npx clifer init your-project-name
 ```
 
 This command creates a new directory (`your-project-name`) with a basic project structure, ready for
@@ -55,13 +55,13 @@ You can quickly scaffold new commands and subcommands using the Clifer CLI:
 Add a top-level command:
 
 ```bash
-bunx clifer command add [command-name]
+npx clifer command add [command-name]
 ```
 
 Add a subcommand:
 
 ```bash
-bunx clifer command add [parent-command]/[subcommand-name]
+npx clifer command add [parent-command]/[subcommand-name]
 ```
 
 ## 📖 Usage Guide

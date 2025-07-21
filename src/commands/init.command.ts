@@ -131,7 +131,7 @@ export default command<Props>('hello')
   .handle(async ({ name }) => {
     console.log(\`Hello, ${name}\`)
     console.log('')
-    console.log("Use 'bunx clifer command add [name]' to add a new command")
+    console.log("Use 'npx clifer command add [name]' to add a new command")
   })
 `
     fs.writeFileSync(path.join(commandsDirPath, 'hello.ts'), initCommandTsContent)
