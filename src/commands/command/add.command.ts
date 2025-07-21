@@ -78,7 +78,6 @@ function modifyFiles(entryFile: string, parentCommands: string[]) {
       const nextFile = nextCommand
         ? addParentCommandFile(entryFile, currentCommand)
         : addCommandFile(entryFile, currentCommand)
-      console.log(nextFile)
       files.push(nextFile)
       entryFile = nextFile
     } else {
@@ -98,9 +97,6 @@ function importCommand(path: string, command: string) {
   const lastCommandIndex = lines
     .map(line => line.match(/\.command\(([.+]+)\)/))
     .reduce((lastIdx, match, idx) => (match ? idx : lastIdx), -1)
-  const lastArgumentIndex = lines
-    .map(line => line.match(/\.argument\((.+)\)/))
-    .reduce((lastIdx, match, idx) => (match ? idx : lastIdx), -1)
   const lastDescriptionIndex = lines
     .map(line => line.match(/\.description\((.+)\)/))
     .reduce((lastIdx, match, idx) => (match ? idx : lastIdx), -1)
@@ -111,8 +107,6 @@ function importCommand(path: string, command: string) {
   const addCommandAt =
     lastCommandIndex > -1
       ? lastCommandIndex
-      : lastArgumentIndex > -1
-      ? lastArgumentIndex
       : lastVersionIndex > -1
       ? lastVersionIndex
       : lastDescriptionIndex > -1
@@ -152,7 +146,7 @@ interface Props {
 
 export default command<Props>('${command}')
   .description('Description of the command')
-  .argument(input('arg').description('Description of the argument').string().required())
+  .option(input('arg').description('Description of the argument').string().required())
   .handle(async ({ arg }) => {
     console.log('Command executed with argument:', arg)
   })
@@ -168,7 +162,6 @@ export default command<Props>('add')
   .description('Add a new command')
   .argument(input('name').description('Name of the command to add').string().required())
   .handle(async ({ name }) => {
-    console.log('🚀 ~ .handle ~ name:', name)
     const parentCommands = name.split('/')
     const entryFile = findEntryFile(process.cwd())
     modifyFiles(entryFile.path, parentCommands)
