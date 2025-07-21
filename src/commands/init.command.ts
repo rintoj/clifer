@@ -1,3 +1,4 @@
+import { spawnSync } from 'child_process'
 import * as fs from 'fs'
 import * as path from 'path'
 import { command } from '../cli-command-builder'
@@ -47,6 +48,11 @@ export default command<Props>('init')
       scripts: {
         start: 'bun build src/cli.ts --target=bun --outdir=dist --watch',
         build: 'rimraf dist; bun build src/cli.ts --target=bun --outdir=dist',
+        link: `bun link [${name}]`,
+        unlink: 'bun unlink',
+      },
+      dependencies: {
+        clifer: '*',
       },
       devDependencies: {
         '@types/fs-extra': '^11.0.4',
@@ -55,9 +61,9 @@ export default command<Props>('init')
         '@types/shelljs': '^0.8.15',
         rimraf: '^6.0.1',
       },
-      keywords: [],
+      keywords: ['cli', 'command-line', 'typescript'],
       author: '',
-      license: 'ISC',
+      license: 'MIT',
     }
     fs.writeFileSync(
       path.join(projectPath, 'package.json'),
@@ -102,12 +108,64 @@ export default command<Props>('init')
     fs.mkdirSync(commandsDirPath, { recursive: true })
 
     // Create src/cli.ts
-    const cliTsContent = `#!/usr/bin/env bun\nconsole.log('Hello from the new CLI!')`
+    const cliTsContent = `#!/usr/bin/env bun
+import { cli, runCli } from 'clifer'
+import hello from './commands/hello'
+
+const program = cli('ask').version('0.1').command(hello)
+
+runCli(program).catch(e => console.error(e))
+`
     fs.writeFileSync(path.join(srcDirPath, 'cli.ts'), cliTsContent)
 
     // Create src/commands/init.command.ts
-    const initCommandTsContent = `import { command } from '../cli-command-builder'\nimport { input } from '../cli-input-builder'\n\ninterface Props {\n  name: string\n}\n\nexport default command<Props>('init')\n  .argument(input('name').description('Name of the project to initialize').string().required())\n  .handle(async ({ name }) => {\n    console.log('Init command executed in new project!', name)\n  })\n`
-    fs.writeFileSync(path.join(commandsDirPath, 'init.command.ts'), initCommandTsContent)
+    const initCommandTsContent = `
+import { command, input } from 'clifer'
+
+interface Props {
+  name: string
+}
+
+export default command<Props>('hello')
+  .argument(input('name').description('Name of the project to initialize').string().required())
+  .handle(async ({ name }) => {
+    console.log(\`Hello, ${name}\`)
+    console.log('')
+    console.log("Use 'bunx clifer command add [name]' to add a new command")
+  })
+`
+    fs.writeFileSync(path.join(commandsDirPath, 'hello.ts'), initCommandTsContent)
+
+    // Run "bun install"
+    console.log('Installing dependencies...')
+    runCommand('bun install', { cwd: projectPath })
+
+    // Run "bun run build"
+    console.log('Building project...')
+    runCommand('bun run build', { cwd: projectPath })
+
+    // Run "bun run link"
+    console.log('Linking project...')
+    runCommand('bun link', { cwd: projectPath })
 
     console.log('✅ Project initialized successfully!')
+    console.log('')
+    console.log(`Use "${name.replace('-cli', '')}" command to run your CLI.`)
+    console.log('')
   })
+
+function runCommand(
+  command: string,
+  options?: { cwd?: string; stdio?: 'inherit' | 'pipe'; shell?: boolean },
+) {
+  const [cmd, ...args] = command.split(' ')
+  const result = spawnSync(cmd, args, {
+    ...(options ?? {}),
+    stdio: 'inherit',
+    shell: process.platform === 'win32',
+  })
+  if (result.error) {
+    throw new Error(`Error executing command: ${command} ${args.join(' ')}`)
+  }
+  return result.stdout?.toString() ?? ''
+}
