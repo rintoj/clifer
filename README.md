@@ -306,19 +306,19 @@ create. Any contributions you make are greatly appreciated.
 4.  Push to the Branch (`git push origin feature/AmazingFeature`)
 5.  Open a Pull Request
 
-## 📜 License
+### 📜 License
 
 This project is distributed under the MIT License. See the `LICENSE` file for more information.
 
-## 💖 Code of Conduct
+### 💖 Code of Conduct
 
 To ensure a welcoming and inclusive environment, please read and follow our Code of Conduct.
 
-## 📋 Changelog
+### 📋 Changelog
 
 See the Changelog for a detailed history of changes to the project.
 
-## 🤔 FAQ
+### 🤔 FAQ
 
 **Q: How do I handle asynchronous operations in a command?**
 
