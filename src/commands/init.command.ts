@@ -1,7 +1,7 @@
-import { command } from '../cli-command-builder'
-import { input } from '../cli-input-builder'
 import * as fs from 'fs'
 import * as path from 'path'
+import { command } from '../cli-command-builder'
+import { input } from '../cli-input-builder'
 
 interface Props {
   name: string
@@ -42,7 +42,7 @@ export default command<Props>('init')
       description: '',
       main: 'dist/cli.js',
       bin: {
-        [name]: 'bin/cli',
+        [name.replace('-cli', '')]: 'bin/cli',
       },
       scripts: {
         start: 'bun build src/cli.ts --target=bun --outdir=dist --watch',
