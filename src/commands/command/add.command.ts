@@ -117,20 +117,27 @@ function findEntryFile(directory: string) {
 function findFiles(entryFile: string, parentCommands: string[]) {
   const files: string[] = []
   files.push(entryFile)
-  for (const parentCommand of parentCommands) {
+  for (let index = 0; index < parentCommands.length; index++) {
+    const currentCommand = parentCommands[index]
+    const nextCommand = parentCommands[index + 1]
     const commands = findCommandsFromFile(entryFile)
-    if (!commands[parentCommand]) {
-      console.error(`Command "${parentCommand}" not found in entry file: ${entryFile}`)
-      console.log(addCommand(entryFile, parentCommand))
-      return
+    if (!commands[currentCommand]) {
+      importCommand(entryFile, currentCommand)
+      const nextFile = nextCommand
+        ? addParentCommandFile(entryFile, currentCommand)
+        : addCommandFile(entryFile, currentCommand)
+      console.log(nextFile)
+      files.push(nextFile)
+      entryFile = nextFile
+    } else {
+      files.push(commands[currentCommand])
+      entryFile = commands[currentCommand]
     }
-    files.push(commands[parentCommand])
-    entryFile = commands[parentCommand]
   }
   return files
 }
 
-function addCommand(path: string, command: string) {
+function importCommand(path: string, command: string) {
   const content = fs.readFileSync(path, 'utf-8')
   const lines = content.split('\n')
   const lastImportIndex = lines
@@ -139,13 +146,65 @@ function addCommand(path: string, command: string) {
   const lastCommandIndex = lines
     .map(line => line.match(/\.command\(([a-zA-Z0-9_]+)\)/))
     .reduce((lastIdx, match, idx) => (match ? idx : lastIdx), -1)
-  return [
+  const lastDescriptionIndex = lines
+    .map(line => line.match(/\.description\(([a-zA-Z0-9_]+)\)/))
+    .reduce((lastIdx, match, idx) => (match ? idx : lastIdx), -1)
+  const lastVersionIndex = lines
+    .map(line => line.match(/\.version\(([a-zA-Z0-9_]+)\)/))
+    .reduce((lastIdx, match, idx) => (match ? idx : lastIdx), -1)
+
+  const lastLine =
+    lastCommandIndex < -1
+      ? lastDescriptionIndex < -1
+        ? lastVersionIndex
+        : lastDescriptionIndex
+      : lastCommandIndex
+
+  const updatedContent = [
     ...lines.slice(0, lastImportIndex + 1),
     `import ${command} from './${command}/${command}.command'`,
-    ...lines.slice(lastImportIndex + 1, lastCommandIndex + 1),
+    ...lines.slice(lastImportIndex + 1, lastLine + 1),
     `  .command(${command})`,
-    ...lines.slice(lastCommandIndex + 1),
+    ...lines.slice(lastLine + 1),
   ].join('\n')
+  console.log(`\n-----\n\n${path}:\n${updatedContent}`)
+  fs.writeFileSync(path, updatedContent)
+}
+
+function addParentCommandFile(path: string, command: string) {
+  const content = `import { command, input } from 'clifer'
+
+interface Props {
+  arg: string
+}
+
+export default command('${command}')
+  .description('Description of the command')
+`
+  const targetPath = resolve(dirname(path), command, `${command}.command.ts`)
+  console.log(`\n-----\n\n${targetPath}:\n${content}`)
+  fs.writeFileSync(targetPath, content)
+  return targetPath
+}
+
+function addCommandFile(path: string, command: string) {
+  const content = `import { command, input } from 'clifer'
+
+interface Props {
+  arg: string
+}
+
+export default command('${command}')
+  .description('Description of the command')
+  .argument(input('arg').description('Description of the argument').string().required())
+  .handle(async ({ arg }) => {
+    console.log('Command executed with argument:', arg)
+  })
+`
+  const targetPath = resolve(dirname(path), command, `${command}.command.ts`)
+  console.log(`\n-----\n\n${targetPath}:\n${content}`)
+  fs.writeFileSync(targetPath, content)
+  return targetPath
 }
 
 export default command<Props>('add')
