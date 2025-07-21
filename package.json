@@ -12,7 +12,7 @@
   "scripts": {
     "build:cli": "rimraf dist; bun build src/cli.ts --target=bun --outdir=dist",
     "build:lib": "rimraf lib && tsc",
-    "build": "build:lib && build:cli",
+    "build": "rimraf dist lib && tsc && bun build src/cli.ts --target=bun --outdir=dist",
     "test": "jest",
     "lint": "eslint --fix && tsc -p . --noEmit && yarn prettier",
     "prettier": "prettier --write \"src/**/*.{ts,tsx}\" -c",
@@ -62,8 +62,11 @@
     ]
   },
   "dependencies": {
+    "@types/fs-extra": "^11.0.4",
     "chalk": "4.1.2",
     "enquirer": "^2.3.6",
+    "fs-extra": "^11.3.0",
+    "glob": "^11.0.3",
     "name-util": "^1.3.0"
   }
 }
