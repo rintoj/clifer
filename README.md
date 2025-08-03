@@ -1,344 +1,452 @@
 # Clifer
 
-Clifer is a lightweight and powerful library for building beautiful, modern, and user-friendly
-command-line interface (CLI) applications with Node.js.
+[![npm version](https://img.shields.io/npm/v/clifer.svg)](https://www.npmjs.com/package/clifer)
+[![npm downloads](https://img.shields.io/npm/dm/clifer.svg)](https://www.npmjs.com/package/clifer)
+[![license](https://img.shields.io/npm/l/clifer.svg)](https://github.com/rintoj/clifer/blob/master/LICENSE)
+
+A lightweight, type-safe TypeScript library for building beautiful command-line interfaces with zero dependencies.
 
 ## ✨ Features
 
-- **Simple & Intuitive API**: A fluent, chainable API that makes defining commands, arguments, and
-  options a breeze.
-- **Automatic Help Generation**: Get beautifully formatted help messages for your CLI and its
-  commands without any extra work.
-- **Powerful Input Handling**: Supports positional arguments, options, flags, and various data types
-  (string, number).
-- **Interactive Prompts**: Easily prompt users for input, including confirmations, text, and choices
-  with auto-completion.
-- **Type-Safe**: Written in TypeScript to provide excellent autocompletion and catch errors at
-  compile time.
-- **Zero Dependencies**: A lean library that doesn't bloat your project.
+- 🎯 **Type-Safe**: Full TypeScript support with compile-time type checking
+- 🔗 **Fluent API**: Chainable, intuitive interface for building CLIs
+- 📦 **Zero Dependencies**: Lightweight with no external dependencies
+- 🎨 **Interactive Prompts**: Built-in support for user input and confirmations
+- 📚 **Auto-Generated Help**: Beautiful help messages without extra configuration
+- 🏗️ **Modular Architecture**: Easy organization for complex CLI applications
+- ⚡ **Fast & Lightweight**: Minimal overhead for maximum performance
 
 ## 📦 Installation
 
-You can install Clifer using either Yarn or NPM:
-
-### Yarn
-
-```bash
-yarn add clifer
-```
-
-### NPM
-
 ```bash
 npm install clifer
+# or
+yarn add clifer
+# or
+pnpm add clifer
+# or
+bun add clifer
 ```
 
-## 🚀 Getting Started: Your First CLI
+## 🚀 Quick Start
 
-Clifer provides a handy initializer to get your project up and running in seconds.
-
-Make sure you have Bun installed, then run:
-
-```bash
-npx clifer init your-project-name
-```
-
-This command creates a new directory (`your-project-name`) with a basic project structure, ready for
-you to start building.
-
-For more complex tools, you can structure your application with nested commands.
-
-### Adding Commands with the CLI
-
-You can quickly scaffold new commands and subcommands using the Clifer CLI:
-
-Add a top-level command:
-
-```bash
-npx clifer command add [command-name]
-```
-
-Add a subcommand:
-
-```bash
-npx clifer command add [parent-command]/[subcommand-name]
-```
-
-## 📖 Usage Guide
-
-Here’s how to use Clifer to build a command. Create a file, for example `src/cli.ts`:
+### Create a Simple CLI
 
 ```typescript
 import { cli, input, runCli } from 'clifer'
 
-// Use an enum for type-safe choices
-enum Type {
-  api = 'api',
-  subscriber = 'subscriber',
-}
-
-// Define the properties your command will accept
 interface Props {
   name: string
-  service: string
-  instances?: number
-  type?: Type
-  dryRun?: boolean
+  greeting?: string
 }
 
-// This is where your command's logic goes
-function run(props: Props) {
-  console.log('Running with the following properties:')
-  console.log({ props })
-}
-
-// Define your CLI program
-const program = cli<Props>('create-model')
-  // Set the version of your CLI, which adds a --version flag
+const program = cli<Props>('greet')
   .version('1.0.0')
+  .description('A friendly greeting CLI')
+  .argument(input('name').description('Your name').string().required())
+  .option(input('greeting').description('Custom greeting').string())
+  .handle(async (props) => {
+    const greeting = props.greeting || 'Hello'
+    console.log(`${greeting}, ${props.name}!`)
+  })
 
-  // Add a required positional argument for the model's name
-  .argument(input('name').description('Name of the model').string().required().prompt())
-
-  // Add a required --service option
-  .option(input('service').description('Name of the service').string().required())
-
-  // Add an optional --instances option with a default value
-  .option(input('instances').description('Number of instances').number().default(2))
-
-  // Add an option with a predefined set of choices
-  .option(
-    input('type').description('Type of the model').string().options([Type.api, Type.subscriber]),
-  )
-
-  // Add a boolean flag, --dry-run
-  .option(input('dryRun').description('Perform a dry run'))
-
-  // Define the function to execute when the command is run
-  .handle(run)
-
-// Run the CLI and catch any potential errors
-runCli(program).catch(e => console.error(e))
+runCli(program).catch(console.error)
 ```
 
-### Auto-Generated Help
+### Using the Clifer CLI Tool
 
-Clifer automatically generates a helpful guide for your users. Running `your-command --help` will
-display all arguments, options, and descriptions.
+Clifer includes a CLI tool to help scaffold new projects:
 
-### Defining Commands in Code
+```bash
+# Create a new CLI project
+npx clifer init my-cli-app
 
-Here is how you can define a `create` command with multiple subcommands (`model`, `repository`,
-`schema`):
+# Add a new command to existing project
+npx clifer command add my-command
+
+# Add a subcommand
+npx clifer command add parent/subcommand
+
+# Remove a command
+npx clifer command remove my-command
+```
+
+## 📖 Core Concepts
+
+### Basic Command Structure
+
+```typescript
+import { cli, input, runCli } from 'clifer'
+
+interface Props {
+  name: string
+  verbose?: boolean
+}
+
+const program = cli<Props>('mycli')
+  .version('1.0.0')
+  .description('My CLI application')
+  .argument(input('name').description('Name parameter').string().required())
+  .option(input('verbose').description('Enable verbose output'))
+  .handle(async (props) => {
+    if (props.verbose) {
+      console.log('Verbose mode enabled')
+    }
+    console.log(`Hello, ${props.name}!`)
+  })
+
+runCli(program)
+```
+
+### Input Types
+
+Clifer supports various input types with full TypeScript inference:
+
+```typescript
+// String input
+.option(input('name').description('Your name').string())
+
+// Number input
+.option(input('port').description('Port number').number().default(3000))
+
+// Boolean flag
+.option(input('force').description('Force operation'))
+
+// Choice input
+.option(input('env').string().choices(['dev', 'staging', 'prod']))
+
+// Required argument
+.argument(input('file').string().required())
+
+// With validation
+.option(input('email').string().validate(value => {
+  if (!value.includes('@')) throw new Error('Invalid email')
+  return value
+}))
+```
+
+### Nested Commands
+
+Build complex CLIs with nested command structures:
 
 ```typescript
 import { cli, command, input, runCli } from 'clifer'
 
-// Define interfaces for props
-interface Props {
-  dryRun?: boolean
-}
-interface CreateCommandProps {
-  name: string
-  type?: 'ts' | 'js'
-}
-
-// Define a "model" subcommand
-const createModel = command<CreateCommandProps>('model')
-  .description('Create a new model file')
-  .argument(input('name').description('Name of the model').string().required())
-  .option(input('type').description('File type').string().options(['ts', 'js']))
-  .handle((props: CreateCommandProps) => {
-    console.log('Creating model:', props)
+// Subcommands
+const addUser = command<{ name: string; email: string }>('add')
+  .description('Add a new user')
+  .argument(input('name').string().required())
+  .argument(input('email').string().required())
+  .handle(async ({ name, email }) => {
+    console.log(`Adding user: ${name} (${email})`)
   })
 
-// Define a "repository" subcommand
-const createRepository = command<CreateCommandProps>('repository')
-  .description('Create a new repository file')
-  // ... similar arguments and options ...
-  .handle((props: CreateCommandProps) => {
-    console.log('Creating repository:', props)
+const listUsers = command('list')
+  .description('List all users')
+  .option(input('format').string().choices(['json', 'table']).default('table'))
+  .handle(async ({ format }) => {
+    console.log(`Listing users in ${format} format`)
   })
 
-// Group subcommands under a main "create" command
-const createCommand = command('create')
-  .description('Create backend modules')
-  .command(createModel)
-  .command(createRepository)
+// Parent command
+const userCommand = command('user')
+  .description('User management')
+  .command(addUser)
+  .command(listUsers)
 
-// Build the main program
-const program = cli<Props>('builder')
+// Main CLI
+const program = cli('myapp')
   .version('1.0.0')
-  .command(createCommand) // Add the "create" command
-  .option(input('dryRun').description('Execute a sample run'))
+  .description('My application')
+  .command(userCommand)
 
-runCli(program).catch((e: any) => console.error(e))
+runCli(program)
 ```
 
-Now you can run commands like `builder create model my-user-model --type ts`.
+Usage:
+```bash
+myapp user add "John Doe" john@example.com
+myapp user list --format json
+```
 
-## 💬 Interactive Prompts
+### Interactive Prompts
 
-Clifer can prompt the user for information if it's not provided as an argument or option. You can
-also use the `prompt` function for fully interactive scripts.
+Create interactive CLI experiences with built-in prompts:
 
 ```typescript
-import { input, prompt } from 'clifer'
+import { cli, input, prompt, runCli } from 'clifer'
 
-async function runPrompts() {
-  // Simple Yes/No confirmation
-  const { overwrite } = await prompt(
-    input('overwrite').description('Overwrite existing files?').prompt('Should overwrite?'),
-  )
-  console.log({ overwrite })
+const program = cli('setup')
+  .description('Interactive setup wizard')
+  .handle(async () => {
+    // Prompt for multiple values
+    const config = await prompt(
+      input('projectName').prompt('Project name?').string().required(),
+      input('description').prompt('Description?').string(),
+      input('typescript').prompt('Use TypeScript?').boolean(),
+      input('framework')
+        .prompt('Choose framework:')
+        .string()
+        .choices(['express', 'fastify', 'koa'])
+    )
+    
+    console.log('Configuration:', config)
+  })
 
-  // Prompt for a string with auto-complete suggestions
-  const { environment } = await prompt(
-    input('environment')
-      .description('Environment')
-      .string()
-      .prompt('Enter environment')
-      .choices(['local', 'dev', 'prod']),
-  )
-  console.log({ environment })
-
-  // Prompt for multiple inputs at once
-  const personalInfo = await prompt(
-    input('firstName').description('First name').string().prompt(),
-    input('lastName').description('Last name').string().prompt(),
-    input('gender').description('Gender').string().choices(['Male', 'Female']).prompt(),
-  )
-  console.log(personalInfo)
-}
-
-runPrompts()
+runCli(program)
 ```
+
+You can also make arguments and options prompt when missing:
+
+```typescript
+const program = cli('deploy')
+  .argument(
+    input('environment')
+      .string()
+      .required()
+      .prompt('Which environment?')
+      .choices(['dev', 'staging', 'prod'])
+  )
+  .option(
+    input('force')
+      .prompt('Skip confirmation?')
+  )
+  .handle(async (props) => {
+    console.log(`Deploying to ${props.environment}...`)
+  })
+```
+
+## 🛠️ API Reference
+
+### `cli(name: string)`
+Creates a new CLI program with the specified name.
+
+### `command(name: string)`
+Creates a new command that can be added to a CLI or another command.
+
+### `input(name: string)`
+Creates a new input (argument or option) with the following methods:
+- `.description(text: string)`: Set description
+- `.string()`: Define as string type
+- `.number()`: Define as number type
+- `.boolean()`: Define as boolean type
+- `.required()`: Mark as required
+- `.default(value)`: Set default value
+- `.choices(array)`: Limit to specific choices
+- `.prompt(text?)`: Enable interactive prompt
+- `.validate(fn)`: Add custom validation
+
+### `prompt(...inputs)`
+Prompts for multiple inputs interactively.
+
+### `runCli(program)`
+Executes the CLI program with process arguments.
 
 ## 🚨 Error Handling
 
-For expected errors, like invalid user input or configuration issues, throw a `CliExpectedError`.
-This will display a clean error message to the user without a scary stack trace.
+Handle errors gracefully with `CliExpectedError`:
 
 ```typescript
-import { CliExpectedError } from 'clifer'
+import { CliExpectedError, cli, runCli } from 'clifer'
 
-function someAction(props: { arg?: string }) {
-  if (!props.arg) {
-    throw new CliExpectedError('Missing a required argument "--arg". Please provide a value.')
+const program = cli('deploy')
+  .argument(input('environment').string().required())
+  .handle(async ({ environment }) => {
+    if (!['dev', 'staging', 'prod'].includes(environment)) {
+      throw new CliExpectedError(
+        `Invalid environment "${environment}". Use: dev, staging, or prod`
+      )
+    }
+    
+    // Deploy logic...
+  })
+
+runCli(program).catch(error => {
+  if (error instanceof CliExpectedError) {
+    console.error(`Error: ${error.message}`)
+    process.exit(1)
   }
-  // ...
-}
-```
-
-## 📦 Publishing Your CLI
-
-> This is already setup for you if you have used "init" command.
-
-To make your CLI tool available as an executable npm package, follow these steps:
-
-### Step 1: Add a `bin` Field to `package.json`
-
-This field tells npm which file to run for your command.
-
-```json
-{
-  "name": "your-cli-tool",
-  "version": "1.0.0",
-  "bin": {
-    "your-command": "bin/cli"
-  }
-}
-```
-
-### Step 2: Create the Executable File
-
-Create the file `bin/cli` and add a shebang (`#!`) at the top. This line ensures the script is run
-with Node.js.
-
-```javascript
-#!/usr/bin/env node
-
-// This script ensures that your compiled TypeScript code is executed.
-const { spawn } = require('child_process')
-const { resolve } = require('path')
-
-// Path to your main compiled JS file
-const cli = resolve(__dirname, '..', 'dist', 'index.js')
-const args = process.argv.slice(2)
-
-const child = spawn('node', [cli, ...args], {
-  stdio: 'inherit',
-})
-
-child.on('exit', function (code) {
-  process.exit(code)
+  throw error
 })
 ```
 
-### Step 3: Make the File Executable
+## 🏗️ Advanced Examples
 
-Run this command in your terminal to give the file execute permissions:
+### Loading Configuration
 
-```bash
-chmod +x bin/cli
+```typescript
+import { cli, input, runCli } from 'clifer'
+import { readFile } from 'fs/promises'
+
+interface Config {
+  apiUrl: string
+  timeout: number
+}
+
+const program = cli<{ config?: string }>('myapp')
+  .option(input('config').description('Config file path').string())
+  .load(async (props) => {
+    // Load configuration before parsing other arguments
+    if (props.config) {
+      const content = await readFile(props.config, 'utf-8')
+      return JSON.parse(content) as Partial<Config>
+    }
+    return {}
+  })
+  .handle(async (props) => {
+    console.log('Configuration loaded:', props)
+  })
+
+runCli(program)
 ```
 
-### Step 4: Test Your Command Locally
+### Custom Help Formatting
 
-Before publishing, you can test your command locally.
+```typescript
+const program = cli('myapp')
+  .version('1.0.0')
+  .description('My application')
+  .help(() => {
+    return `
+Custom Help Message
+===================
 
-```bash
-# This creates a symbolic link to your local package
-npm link
+Usage: myapp [options]
 
-# Now you can run your command anywhere on your system
-your-command --help
+This is a custom help message with your own formatting.
+
+Options:
+  --help     Show this help message
+  --version  Show version number
+    `
+  })
+```
+
+### Async Command Handlers
+
+```typescript
+const program = cli('fetch')
+  .argument(input('url').string().required())
+  .option(input('timeout').number().default(5000))
+  .handle(async ({ url, timeout }) => {
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), timeout)
+    
+    try {
+      const response = await fetch(url, { signal: controller.signal })
+      const data = await response.json()
+      console.log(data)
+    } catch (error) {
+      if (error.name === 'AbortError') {
+        throw new CliExpectedError(`Request timed out after ${timeout}ms`)
+      }
+      throw error
+    } finally {
+      clearTimeout(timeoutId)
+    }
+  })
+```
+
+## 📚 Examples
+
+### Complete TODO CLI Example
+
+```typescript
+import { cli, command, input, runCli, CliExpectedError } from 'clifer'
+import { readFileSync, writeFileSync, existsSync } from 'fs'
+
+interface Todo {
+  id: number
+  text: string
+  done: boolean
+}
+
+const TODO_FILE = './todos.json'
+
+const loadTodos = (): Todo[] => {
+  if (!existsSync(TODO_FILE)) return []
+  return JSON.parse(readFileSync(TODO_FILE, 'utf-8'))
+}
+
+const saveTodos = (todos: Todo[]) => {
+  writeFileSync(TODO_FILE, JSON.stringify(todos, null, 2))
+}
+
+const addCommand = command<{ text: string }>('add')
+  .description('Add a new todo')
+  .argument(input('text').string().required())
+  .handle(({ text }) => {
+    const todos = loadTodos()
+    const newTodo: Todo = {
+      id: Date.now(),
+      text,
+      done: false
+    }
+    todos.push(newTodo)
+    saveTodos(todos)
+    console.log(`✅ Added: "${text}"`)
+  })
+
+const listCommand = command<{ all?: boolean }>('list')
+  .description('List todos')
+  .option(input('all').description('Show completed todos'))
+  .handle(({ all }) => {
+    const todos = loadTodos()
+    const filtered = all ? todos : todos.filter(t => !t.done)
+    
+    if (filtered.length === 0) {
+      console.log('No todos found.')
+      return
+    }
+    
+    filtered.forEach(todo => {
+      const status = todo.done ? '✓' : '○'
+      console.log(`${status} [${todo.id}] ${todo.text}`)
+    })
+  })
+
+const doneCommand = command<{ id: number }>('done')
+  .description('Mark todo as done')
+  .argument(input('id').number().required())
+  .handle(({ id }) => {
+    const todos = loadTodos()
+    const todo = todos.find(t => t.id === id)
+    
+    if (!todo) {
+      throw new CliExpectedError(`Todo with id ${id} not found`)
+    }
+    
+    todo.done = true
+    saveTodos(todos)
+    console.log(`✅ Marked as done: "${todo.text}"`)
+  })
+
+const program = cli('todo')
+  .version('1.0.0')
+  .description('Simple TODO manager')
+  .command(addCommand)
+  .command(listCommand)
+  .command(doneCommand)
+
+runCli(program).catch(console.error)
 ```
 
 ## 🤝 Contributing
 
-Contributions are what make the open-source community such an amazing place to learn, inspire, and
-create. Any contributions you make are greatly appreciated.
+Contributions are welcome! Please feel free to submit a Pull Request. For major changes, please open an issue first to discuss what you would like to change.
 
-1.  Fork the Project
-2.  Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
-3.  Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
-4.  Push to the Branch (`git push origin feature/AmazingFeature`)
-5.  Open a Pull Request
+## 📜 License
 
-### 📜 License
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-This project is distributed under the MIT License. See the `LICENSE` file for more information.
+## 🙏 Acknowledgments
 
-### 💖 Code of Conduct
+- Built with TypeScript
+- Zero dependencies for maximum performance
+- Inspired by popular CLI frameworks but designed to be simpler and more type-safe
 
-To ensure a welcoming and inclusive environment, please read and follow our Code of Conduct.
+## 📖 Links
 
-### 📋 Changelog
-
-See the Changelog for a detailed history of changes to the project.
-
-### 🤔 FAQ
-
-**Q: How do I handle asynchronous operations in a command?**
-
-A: Simply make your `.handle()` function `async`. Clifer will `await` its completion.
-
-```typescript
-.handle(async (props) => {
-  const data = await fetch('https://api.example.com/data');
-  console.log(await data.json());
-})
-```
-
-**Q: Can I load configuration from a file?**
-
-A: Yes\! Use the `.load()` method to asynchronously load properties from an external source before
-parsing arguments.
-
-```typescript
-.load(async (props) => {
-  // Load from a JSON file, environment variables, etc.
-  return readJSONAsync('./env.json');
-})
-```
+- [GitHub Repository](https://github.com/rintoj/clifer)
+- [npm Package](https://www.npmjs.com/package/clifer)
+- [Issue Tracker](https://github.com/rintoj/clifer/issues)
