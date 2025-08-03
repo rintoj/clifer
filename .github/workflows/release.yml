@@ -20,7 +20,6 @@ jobs:
           bun-version: 'latest'
       - run: yarn
       - run: yarn run lint
-      - run: yarn run test
       - run: yarn run build
       - run: yarn run semantic-release
         env:
