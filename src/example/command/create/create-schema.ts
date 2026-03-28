@@ -1,22 +1,18 @@
 import { command, input } from '../../..'
 
-enum Type {
-  ts = 'ts',
-  js = 'js',
-}
+// Demonstrates: .many() for accepting multiple comma-separated values.
 
 interface Props {
   name: string
-  type?: Type
-  dryRun?: boolean
+  fields: string[]
 }
 
-function run(props: Props) {
+async function run(props: Props) {
   console.log({ props })
 }
 
 export default command<Props>('schema')
-  .description('Create a schema file')
-  .argument(input('name').description('Name of the model').string().required())
-  .option(input('type').description('Type of the model').string().choices([Type.ts, Type.js]))
+  .description('Create a database schema')
+  .argument(input('name').description('Name of the schema').string().required())
+  .option(input('fields').description('Field names (comma-separated)').string().many())
   .handle(run)

@@ -1,6 +1,9 @@
-import { prompt as enquire } from 'enquirer'
+import enquirer from 'enquirer'
+
+const enquire = enquirer.prompt.bind(enquirer)
+
 import { capitalize, toCamelCase, toDashedName } from 'name-util'
-import { InputOrBuilder, isInputBuilder } from './cli-input-builder'
+import { type InputOrBuilder, isInputBuilder } from './cli-input-builder'
 import { InputType } from './cli-types'
 
 function nonEmpty<T>(array: Array<T | undefined | null>): T[] {
@@ -21,16 +24,14 @@ export async function prompt(...inputOrBuilders: InputOrBuilder<any, any>[]) {
             ? 'multiselect'
             : 'autocomplete'
           : isBoolean
-          ? 'confirm'
-          : isNumber
-          ? 'numeral'
-          : 'input',
+            ? 'confirm'
+            : isNumber
+              ? 'numeral'
+              : 'input',
         name: toCamelCase(input.name as string),
         message:
           input.promptMessage ?? capitalize(toDashedName(input.name as string).replace(/-/g, ' ')),
-        ...(isMultiChoice
-          ? { choices, initial: choices.findIndex(choice => choice === input.default) ?? 0 }
-          : {}),
+        ...(isMultiChoice ? { choices, initial: choices.indexOf(input.default) ?? 0 } : {}),
       }
     }),
   )

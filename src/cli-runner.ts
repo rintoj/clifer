@@ -1,11 +1,16 @@
-import { red, yellow } from 'chalk'
 import { toCamelCase } from 'name-util'
 import { allInputs, type CommandOrBuilder, isCommandBuilder } from './cli-command-builder'
 import { CliError } from './cli-error'
 import { CliExpectedError } from './cli-expected-error'
-import { showDocumentation, showHelp, toDocumentation, toHelp } from './cli-help'
+import { showCliError, showDocumentation, showHelp, toDocumentation, toHelp } from './cli-help'
 import { prompt } from './cli-prompt'
-import { type Command, type Input, InputType, isCommand, isInput } from './cli-types'
+import {
+  type Command,
+  type Input,
+  InputType,
+  isCommand,
+  isInput,
+} from './cli-types'
 
 interface Props {
   help?: boolean
@@ -36,8 +41,8 @@ function parseValue(
         const values: string[] = Array.isArray(value)
           ? value
           : typeof value === 'string'
-          ? value.split(',').map(v => v.trim())
-          : [String(value)]
+            ? value.split(',').map(v => v.trim())
+            : [String(value)]
         if (choices?.length) {
           const invalid = values.filter(v => !(choices as string[]).includes(v))
           if (invalid.length) {
@@ -67,9 +72,9 @@ function parseValue(
         typeof value === 'number'
           ? value
           : typeof value === 'string'
-          ? parseInt(value, undefined)
-          : undefined
-      if (targetValue && !isNaN(targetValue)) return targetValue
+            ? parseInt(value, undefined)
+            : undefined
+      if (targetValue && !Number.isNaN(targetValue)) return targetValue
       throw new CliError(
         `Invalid value "${value}" for the input "--${
           input.name as string
@@ -241,19 +246,21 @@ export async function runCli<T>(
     if (parsedProps.help) return showCliHelp(command, commands)
     if (parsedProps.doc) return showDoc(command, commands)
     const initialProps = await parseInitialValues(command, parsedProps)
-    const props = await promptAllMissingValues(command, initialProps, commands)
-    validateMissingArgs(command, props, commands)
+    const allProps = await promptAllMissingValues(command, initialProps, commands)
+    validateMissingArgs(command, allProps, commands)
     if (!command.handler) return showCliHelp(command, commands)
-    return await command.handler(props as any)
+    const finalProps = allProps
+    return await command.handler(finalProps as any)
   } catch (e) {
     if (e instanceof CliError) {
-      console.error(red(`\nError: ${e.message}\n`))
       const commandText = [...e.parentCommands, e.command].map(c => c.name).join(' ')
-      return console.log(yellow(`Run "${commandText} --help" to see help`))
+      return showCliError(e.message, commandText)
     }
     if (e instanceof CliExpectedError) {
-      console.log('')
-      console.error(red(`ERROR: ${e.message}`))
+      const name = isCommandBuilder(commandOrBuilder)
+        ? commandOrBuilder.toCommand().name
+        : commandOrBuilder.name
+      showCliError(e.message, name)
       process.exit(1)
     }
     throw e

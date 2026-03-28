@@ -1,14 +1,7 @@
 import { cli } from './cli-builder'
-import { toDocumentation, toHelp } from './cli-help'
 import { command } from './cli-command-builder'
+import { toDocumentation, toHelp } from './cli-help'
 import { input } from './cli-input-builder'
-
-jest.mock('chalk', () => ({
-  yellow: (a: string) => a,
-  green: (a: string) => a,
-  gray: (a: string) => a,
-  red: (a: string) => a,
-}))
 
 function trim(output: string) {
   return output
@@ -96,17 +89,17 @@ describe('cli', () => {
 
         OPTIONS
 
-        --service-name=<string>   [Required] Name of the service
+        --service-name=<string> *   Name of the service
 
-        --instances=<number>      Number of instances
+        --instances=<number>        Number of instances
 
-        --dry-run                 Do not make changes but run in dry-run mode
+        --dry-run                   Do not make changes but run in dry-run mode
 
         COMMON
 
-        --help                    Show help
+        --help                      Show help
 
-        --doc                     Generate documentation
+        --doc                       Generate documentation
       `),
     )
   })
@@ -207,9 +200,20 @@ describe('cli', () => {
   test('should show many indicator for options with many()', () => {
     const help = toHelp(
       cli<any>('mycli')
-        .option(input('languages').description('Supported languages').string().choices(['en', 'ml', 'fr']).many())
+        .option(
+          input('languages')
+            .description('Supported languages')
+            .string()
+            .choices(['en', 'ml', 'fr'])
+            .many(),
+        )
         .option(input('tags').description('Tags to apply').string().many())
-        .option(input('env').description('Target environment').string().choices(['dev', 'staging', 'prod']))
+        .option(
+          input('env')
+            .description('Target environment')
+            .string()
+            .choices(['dev', 'staging', 'prod']),
+        )
         .toCommand(),
       '',
       true,

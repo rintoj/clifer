@@ -1,24 +1,27 @@
 import { cli, input, runCli } from '..'
 
-function run(props: any) {
-  // handle the action here
+// A minimal CLI with the essentials: version, argument, option, and handler.
+
+interface Props {
+  name: string
+  dryRun?: boolean
+}
+
+async function run(props: Props) {
   console.log({ props })
 }
 
-const program = cli<any>('create-model')
-  // add an option '--version' to the version of the cli
+const program = cli<Props>('greet')
+  // --version flag
   .version('1.0')
 
-  // add --name=<string>
-  .argument(input('name').description('Name of the model').string().required())
+  // positional argument: greet <name>
+  .argument(input('name').description('Name of the person to greet').string().required())
 
-  // add --service=<string>
-  .option(input('service').description('Name of the service').string().required())
+  // boolean flag: --dry-run
+  .option(input('dryRun').description('Do a dry run without side effects'))
 
-  // add --dry-run flag
-  .option(input('dryRun').description('Do a dry run'))
-
-  // handle the command
+  // handler
   .handle(run)
 
 void runCli(program)

@@ -1,6 +1,6 @@
-import * as fs from 'fs'
+import * as fs from 'node:fs'
+import { dirname, resolve } from 'node:path'
 import { glob } from 'glob'
-import { dirname, resolve } from 'path'
 import { command } from '../../cli-command-builder'
 import { input } from '../../cli-input-builder'
 

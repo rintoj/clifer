@@ -40,7 +40,7 @@ export interface Command<T> {
   arguments: Array<Command<any> | Input<T, InputValueType>>
   inputs: ById<Input<any, InputValueType>>
   loader?: (props: Partial<T>) => Promise<Partial<T>>
-  handler?: (props: T) => void | Promise<any>
+  handler?: (props: T) => undefined | Promise<any>
 }
 
 export function isCommand<T>(cmd: any): cmd is Command<T> {
@@ -49,4 +49,10 @@ export function isCommand<T>(cmd: any): cmd is Command<T> {
 
 export function isInput<T, V extends InputValueType>(cmd: any): cmd is Input<T, V> {
   return cmd?.kind === Kind.Input
+}
+
+export type OutputFormat = 'default' | 'text' | 'json'
+
+export interface FormatProps {
+  format: OutputFormat
 }

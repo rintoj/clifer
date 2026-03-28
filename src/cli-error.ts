@@ -1,4 +1,4 @@
-import { Command } from './cli-types'
+import type { Command } from './cli-types'
 
 export class CliError extends Error {
   constructor(
