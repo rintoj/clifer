@@ -1,5 +1,5 @@
 import { input, InputOrBuilder, isInputBuilder } from './cli-input-builder'
-import { Command, Input, InputType, InputValueType, isInput, Kind } from './cli-types'
+import { Command, FormatProps, Input, InputType, InputValueType, isInput, Kind } from './cli-types'
 
 export type CommandBuilderType<T> = CommandBuilder<T> | CommandBuilderBase<T>
 
@@ -11,7 +11,7 @@ export function isCommandBuilder<T>(cmd: CommandOrBuilder<T>): cmd is CommandBui
 
 export function allInputs<T>(cmd: Command<T>): Input<any, any>[] {
   return [...cmd.arguments, ...Object.values(cmd.inputs).filter(isInput)].filter(
-    i => !['version', 'help', 'doc'].includes(i.name as string),
+    i => !['version', 'help', 'doc', 'json', 'text'].includes(i.name as string),
   ) as any
 }
 
@@ -39,6 +39,16 @@ class CommandBuilderBase<T> {
     const input = isInputBuilder(inputOrBuilder) ? inputOrBuilder.toInput() : inputOrBuilder
     this.cmd.inputs[input.name as any] = input
     return this
+  }
+
+  format(): CommandBuilderBase<T & FormatProps> {
+    this.cmd.inputs['json'] = input<{ json: boolean }, any>('json')
+      .description('Output as JSON')
+      .toInput()
+    this.cmd.inputs['text'] = input<{ text: boolean }, any>('text')
+      .description('Output as plain text')
+      .toInput()
+    return this as unknown as CommandBuilderBase<T & FormatProps>
   }
 
   load(loader: (props: Partial<T>) => Promise<Partial<T>>) {

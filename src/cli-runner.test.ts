@@ -7,12 +7,6 @@ function trim(output: string) {
     .join('\n')
 }
 
-jest.mock('chalk', () => ({
-  yellow: (a: string) => a,
-  green: (a: string) => a,
-  gray: (a: string) => a,
-  red: (a: string) => a,
-}))
 
 describe('cli', () => {
   test('should run a simple cli', async () => {

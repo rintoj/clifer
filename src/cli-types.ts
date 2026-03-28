@@ -50,3 +50,9 @@ export function isCommand<T>(cmd: any): cmd is Command<T> {
 export function isInput<T, V extends InputValueType>(cmd: any): cmd is Input<T, V> {
   return cmd?.kind === Kind.Input
 }
+
+export type OutputFormat = 'text' | 'json' | 'rich'
+
+export interface FormatProps {
+  format: OutputFormat
+}

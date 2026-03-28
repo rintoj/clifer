@@ -3,12 +3,6 @@ import { toDocumentation, toHelp } from './cli-help'
 import { command } from './cli-command-builder'
 import { input } from './cli-input-builder'
 
-jest.mock('chalk', () => ({
-  yellow: (a: string) => a,
-  green: (a: string) => a,
-  gray: (a: string) => a,
-  red: (a: string) => a,
-}))
 
 function trim(output: string) {
   return output

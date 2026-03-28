@@ -1,11 +1,14 @@
-import { gray, green, red, yellow } from 'chalk'
+import { Box, Text } from 'ink'
+import React from 'react'
 import { Command, Input, InputType, Kind, isCommand, isInput } from './cli-types'
+import { renderOnce } from './ui/render'
+import { theme } from './ui/theme'
 
 const SPACER = '   '
 const NEW_LINE = `\n`
 const AVAILABLE_WIDTH =
   typeof jest !== 'undefined' ? 80 : (process?.stdout?.columns ?? 80) - SPACER.length
-const COMMON_OPTIONS = ['version', 'help', 'doc']
+const COMMON_OPTIONS = ['version', 'help', 'doc', 'json', 'text']
 
 function extractInputs(command: Command<any>, commonOptions = false) {
   return Object.values(command.inputs)
@@ -89,7 +92,7 @@ function toRequired(content: string, isRequired = true) {
 }
 
 function toInputHelp(input: Command<any> | Input<any, any>): string[] {
-  return [yellow(input.name), input.description ?? '']
+  return [input.name as string, input.description ?? '']
 }
 
 function toOptionType(input: Input<any, any>): string {
@@ -105,8 +108,8 @@ function toOptionType(input: Input<any, any>): string {
 
 function toOptionHelp(input: Input<any, any>): string[] {
   return [
-    yellow(`--${input.name as string}${toOptionType(input)}`),
-    `${input.isRequired ? red('[Required] ') : ''}${input.description ?? ''}`,
+    `--${input.name as string}${toOptionType(input)}`,
+    `${input.isRequired ? '[Required] ' : ''}${input.description ?? ''}`,
   ]
 }
 
@@ -115,7 +118,7 @@ function toInputNames(command: Command<any>) {
   return hasInputs
     ? extractInputs(command).map(input => {
         const option = `--${input.name as string}${toOptionType(input)}`
-        return yellow(input.isRequired ? option : `[${option}]`)
+        return input.isRequired ? option : `[${option}]`
       })
     : []
 }
@@ -125,7 +128,7 @@ function toCommonInputNames(command: Command<any>) {
   return hasInputs
     ? extractInputs(command, true).map(input => {
         const option = `--${input.name as string}${toOptionType(input)}`
-        return yellow(input.isRequired ? option : `[${option}]`)
+        return input.isRequired ? option : `[${option}]`
       })
     : []
 }
@@ -133,13 +136,13 @@ function toCommonInputNames(command: Command<any>) {
 function toInputsHelp(command: Command<any>) {
   const inputs = extractInputs(command)
   const hasInputs = !!inputs.length
-  return hasInputs ? [hasInputs ? [gray('OPTIONS')] : undefined, ...inputs.map(toOptionHelp)] : []
+  return hasInputs ? [hasInputs ? ['OPTIONS'] : undefined, ...inputs.map(toOptionHelp)] : []
 }
 
 function toCommonInputsHelp(command: Command<any>) {
   const hasInputs = !!Object.values(command.inputs).length
   return hasInputs
-    ? [hasInputs ? [gray('COMMON')] : undefined, ...extractInputs(command, true).map(toOptionHelp)]
+    ? [hasInputs ? ['COMMON'] : undefined, ...extractInputs(command, true).map(toOptionHelp)]
     : []
 }
 
@@ -147,7 +150,7 @@ function toArgumentNames(command: Command<any>) {
   const commandArgs = command.arguments.filter(i => i.kind === Kind.Input) as Input<any, any>[]
   const hasArguments = !!commandArgs.length
   return hasArguments
-    ? commandArgs.map(input => yellow(toRequired(input.name as string, !!input.isRequired)))
+    ? commandArgs.map(input => toRequired(input.name as string, !!input.isRequired))
     : []
 }
 
@@ -155,14 +158,14 @@ function toArgumentsHelp(command: Command<any>) {
   const commandArgs = command.arguments.filter(isInput) as Input<any, any>[]
   const hasArguments = !!commandArgs.length
   return hasArguments
-    ? [hasArguments ? [gray('ARGUMENTS')] : undefined, ...commandArgs.map(toInputHelp)]
+    ? [hasArguments ? ['ARGUMENTS'] : undefined, ...commandArgs.map(toInputHelp)]
     : []
 }
 
 function toCommandsHelp(command: Command<any>) {
   const commands = command.arguments.filter(isCommand) as Command<any>[]
   const hasCommands = !!commands.length
-  return hasCommands ? [[gray('COMMANDS')], ...commands.map(toInputHelp)] : []
+  return hasCommands ? [['COMMANDS'], ...commands.map(toInputHelp)] : []
 }
 
 function toCommandNames(command: Command<any>) {
@@ -170,6 +173,8 @@ function toCommandNames(command: Command<any>) {
   const hasCommands = !!commands.length
   return hasCommands ? commands.map(command => command.name) : []
 }
+
+// --- Plain text help (used by toHelp for documentation and tests) ---
 
 export function toHelp(command: Command<any>, prefix?: string, includeCommonInputs?: boolean) {
   const commands = toCommandsHelp(command)
@@ -180,7 +185,7 @@ export function toHelp(command: Command<any>, prefix?: string, includeCommonInpu
   return formatCommand(
     ...toColumn([
       [
-        joinWithSpace(prefix ? green(prefix) : '', command.name ? green(command.name) : ''),
+        joinWithSpace(prefix ?? '', command.name ?? ''),
         joinWithSpace(
           commands.length ? toRequired(toCommandNames(command).join('|')) : '',
           args.length ? toArgumentNames(command).join(' ') : '',
@@ -193,10 +198,93 @@ export function toHelp(command: Command<any>, prefix?: string, includeCommonInpu
   )
 }
 
+// --- Ink-based help rendering ---
+
+function HelpLine({ left, right, isSection }: { left: string; right?: string; isSection?: boolean }) {
+  if (isSection) {
+    return (
+      <Box marginTop={1}>
+        <Text color={theme.colors.muted}>{left}</Text>
+      </Box>
+    )
+  }
+  return (
+    <Box gap={3}>
+      <Text color={theme.colors.warning}>{left}</Text>
+      {right && <Text>{right}</Text>}
+    </Box>
+  )
+}
+
+function HelpView({ command, prefix, includeCommonInputs }: { command: Command<any>; prefix?: string; includeCommonInputs?: boolean }) {
+  const commands = toCommandsHelp(command)
+  const args = toArgumentsHelp(command)
+  const inputs = toInputsHelp(command)
+  const commonInputs = includeCommonInputs ? toCommonInputsHelp(command) : []
+  const allLines = [...commands, ...args, ...inputs, ...commonInputs].filter(i => !!i) as string[][]
+
+  const usageParts = joinWithSpace(
+    commands.length ? toRequired(toCommandNames(command).join('|')) : '',
+    args.length ? toArgumentNames(command).join(' ') : '',
+    inputs.length ? toInputNames(command).join(' ') : '',
+    includeCommonInputs ? toCommonInputNames(command).join(' ') : '',
+  )
+
+  return (
+    <Box flexDirection="column" paddingLeft={1}>
+      <Box gap={1}>
+        <Text color={theme.colors.success} bold>{joinWithSpace(prefix ?? '', command.name ?? '')}</Text>
+        <Text color={theme.colors.warning}>{usageParts}</Text>
+      </Box>
+      <Box flexDirection="column" marginTop={1}>
+        {allLines.map((line, i) => {
+          const isSection = line.length === 1 && ['COMMANDS', 'ARGUMENTS', 'OPTIONS', 'COMMON'].includes(line[0])
+          if (isSection) {
+            return <HelpLine key={i} left={line[0]} isSection />
+          }
+          const isRequired = line[1]?.startsWith('[Required]')
+          return (
+            <Box key={i} gap={3}>
+              <Text color={theme.colors.warning}>{line[0]}</Text>
+              <Text>
+                {isRequired && <Text color={theme.colors.error}>[Required] </Text>}
+                {isRequired ? line[1].replace('[Required] ', '') : line[1] ?? ''}
+              </Text>
+            </Box>
+          )
+        })}
+      </Box>
+    </Box>
+  )
+}
+
+function CliErrorView({ message, commandText }: { message: string; commandText: string }) {
+  return (
+    <Box flexDirection="column" paddingLeft={1}>
+      <Text color={theme.colors.error}>
+        {'\n'}Error: {message}{'\n'}
+      </Text>
+      <Text color={theme.colors.warning}>
+        Run &quot;{commandText} --help&quot; to see help
+      </Text>
+    </Box>
+  )
+}
+
 export function showHelp<T>(command: Command<T>, prefix?: string) {
-  const help = toHelp(command, prefix, true)
-  console.log(help)
-  return help
+  if (typeof jest !== 'undefined') {
+    return toHelp(command, prefix)
+  }
+  return renderOnce(<HelpView command={command} prefix={prefix} includeCommonInputs />)
+}
+
+export function showCliError(message: string, commandText: string) {
+  if (typeof jest !== 'undefined') {
+    console.error(`\nError: ${message}\n`)
+    console.log(`Run "${commandText} --help" to see help`)
+    return
+  }
+  return renderOnce(<CliErrorView message={message} commandText={commandText} />)
 }
 
 export function toDocumentation<T>(

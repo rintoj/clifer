@@ -1,11 +1,10 @@
-import { red, yellow } from 'chalk'
 import { toCamelCase } from 'name-util'
 import { allInputs, type CommandOrBuilder, isCommandBuilder } from './cli-command-builder'
 import { CliError } from './cli-error'
 import { CliExpectedError } from './cli-expected-error'
-import { showDocumentation, showHelp, toDocumentation, toHelp } from './cli-help'
+import { showCliError, showDocumentation, showHelp, toDocumentation, toHelp } from './cli-help'
 import { prompt } from './cli-prompt'
-import { type Command, type Input, InputType, isCommand, isInput } from './cli-types'
+import { type Command, type Input, InputType, isCommand, isInput, OutputFormat } from './cli-types'
 
 interface Props {
   help?: boolean
@@ -241,20 +240,27 @@ export async function runCli<T>(
     if (parsedProps.help) return showCliHelp(command, commands)
     if (parsedProps.doc) return showDoc(command, commands)
     const initialProps = await parseInitialValues(command, parsedProps)
-    const props = await promptAllMissingValues(command, initialProps, commands)
-    validateMissingArgs(command, props, commands)
+    const allProps = await promptAllMissingValues(command, initialProps, commands)
+    validateMissingArgs(command, allProps, commands)
     if (!command.handler) return showCliHelp(command, commands)
-    return await command.handler(props as any)
+    const hasFormatOption = 'json' in command.inputs
+    let finalProps = allProps
+    if (hasFormatOption) {
+      const format: OutputFormat = allProps.json ? 'json' : allProps.text ? 'text' : 'rich'
+      const { json: _j, text: _t, ...cleanProps } = allProps
+      finalProps = { ...cleanProps, format }
+    }
+    return await command.handler(finalProps as any)
   } catch (e) {
     if (e instanceof CliError) {
-      console.error(red(`\nError: ${e.message}\n`))
       const commandText = [...e.parentCommands, e.command].map(c => c.name).join(' ')
-      return console.log(yellow(`Run "${commandText} --help" to see help`))
+      return showCliError(e.message, commandText)
     }
     if (e instanceof CliExpectedError) {
-      console.log('')
-      console.error(red(`ERROR: ${e.message}`))
-      process.exit(1)
+      const name = isCommandBuilder(commandOrBuilder)
+        ? commandOrBuilder.toCommand().name
+        : commandOrBuilder.name
+      return showCliError(e.message, name)
     }
     throw e
   }
