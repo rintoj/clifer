@@ -17,7 +17,7 @@ export async function prompt(...inputOrBuilders: InputOrBuilder<any, any>[]) {
       const choices = [...(input.choices ?? [])].map(i => `${i}`)
       return {
         type: isMultiChoice
-          ? input.isMultiSelect
+          ? input.isMany
             ? 'multiselect'
             : 'autocomplete'
           : isBoolean

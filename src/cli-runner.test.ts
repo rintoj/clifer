@@ -418,37 +418,37 @@ describe('cli', () => {
     )
   })
 
-  test('should parse multiselect option with comma-separated string', async () => {
+  test('should parse many option with comma-separated string', async () => {
     const run = jest.fn()
     await runCli(
       cli<any>('mycli')
         .version('1.0')
-        .option(input('fields').string().choices(['name', 'age', 'email']).multiselect())
+        .option(input('fields').string().choices(['name', 'age', 'email']).many())
         .handle(run),
       ['--fields=name,age'],
     )
     expect(run).toHaveBeenCalledWith({ fields: ['name', 'age'] })
   })
 
-  test('should parse multiselect option without choices', async () => {
+  test('should parse many option without choices', async () => {
     const run = jest.fn()
     await runCli(
       cli<any>('mycli')
         .version('1.0')
-        .option(input('tags').string().multiselect())
+        .option(input('tags').string().many())
         .handle(run),
       ['--tags=a,b,c'],
     )
     expect(run).toHaveBeenCalledWith({ tags: ['a', 'b', 'c'] })
   })
 
-  test('should throw error for invalid multiselect values', async () => {
+  test('should throw error for invalid many values', async () => {
     const run = jest.fn()
     console.error = jest.fn()
     await runCli(
       cli<any>('mycli')
         .version('1.0')
-        .option(input('fields').string().choices(['name', 'age', 'email']).multiselect())
+        .option(input('fields').string().choices(['name', 'age', 'email']).many())
         .handle(run),
       ['--fields=name,invalid'],
     )

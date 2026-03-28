@@ -27,7 +27,7 @@ export interface Input<T, V extends InputValueType> {
   default?: V
   choices?: Array<V>
   isRequired?: boolean
-  isMultiSelect?: boolean
+  isMany?: boolean
   shouldPrompt?: boolean
   promptMessage?: string
 }

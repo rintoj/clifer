@@ -204,6 +204,38 @@ describe('cli', () => {
     )
   })
 
+  test('should show many indicator for options with many()', () => {
+    const help = toHelp(
+      cli<any>('mycli')
+        .option(input('languages').description('Supported languages').string().choices(['en', 'ml', 'fr']).many())
+        .option(input('tags').description('Tags to apply').string().many())
+        .option(input('env').description('Target environment').string().choices(['dev', 'staging', 'prod']))
+        .toCommand(),
+      '',
+      true,
+    )
+    expect(trim(help)).toEqual(
+      trim(`
+        mycli   [--languages=<en|ml|fr>,...] [--tags=<string>,...] [--env=<dev|staging|prod>]
+        [--help] [--doc]
+
+        OPTIONS
+
+        --languages=<en|ml|fr>,...   Supported languages
+
+        --tags=<string>,...          Tags to apply
+
+        --env=<dev|staging|prod>     Target environment
+
+        COMMON
+
+        --help                       Show help
+
+        --doc                        Generate documentation
+      `),
+    )
+  })
+
   test('should generate documentation', () => {
     const help = toDocumentation(
       cli<any>('mycli')

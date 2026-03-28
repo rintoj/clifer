@@ -94,10 +94,10 @@ function toInputHelp(input: Command<any> | Input<any, any>): string[] {
 
 function toOptionType(input: Input<any, any>): string {
   if (input.choices?.length) {
-    return `=<${input.choices?.join('|')}>`
+    return `=<${input.choices?.join('|')}>${input.isMany ? ',...' : ''}`
   }
   return input.type === InputType.String
-    ? '=<string>'
+    ? `=<string>${input.isMany ? ',...' : ''}`
     : input.type === InputType.Number
     ? '=<number>'
     : ''
