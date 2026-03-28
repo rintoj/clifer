@@ -44,6 +44,9 @@
     "prepublish": "yarn run build",
     "semantic-release": "semantic-release"
   },
+  "release": {
+    "branches": ["main"]
+  },
   "devDependencies": {
     "@types/chalk": "^2.2.0",
     "@types/jest": "^29.0.1",
