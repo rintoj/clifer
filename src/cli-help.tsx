@@ -341,13 +341,10 @@ function HelpView({
           const leftText = isRequired ? left.slice(0, -2) : left
           const padding = generateSpaces(maxLeftWidth - leftText.length - (isRequired ? 2 : 0))
           const isCommandOrArg = currentSection === 'COMMANDS' || currentSection === 'ARGUMENTS'
-          const isCommon = currentSection === 'COMMON'
           return (
             <Box key={i} gap={3}>
               <Text>
-                {isCommon ? (
-                  <Text color={theme.colors.muted}>{leftText}</Text>
-                ) : isCommandOrArg ? (
+                {isCommandOrArg ? (
                   <Text color={currentSection === 'COMMANDS' ? theme.colors.success : theme.colors.primary}>
                     {leftText}
                   </Text>
@@ -357,7 +354,7 @@ function HelpView({
                 {isRequired && <Text color={theme.colors.error}> *</Text>}
                 <Text>{padding}</Text>
               </Text>
-              <Text color={isCommon ? theme.colors.muted : theme.colors.value}>{line[1] ?? ''}</Text>
+              <Text color={theme.colors.value}>{line[1] ?? ''}</Text>
             </Box>
           )
         })}
