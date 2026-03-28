@@ -61,6 +61,11 @@ class NonBooleanInputBuilder<T, V extends InputValueType> extends BaseInputBuild
     this.input.choices = values
     return this
   }
+
+  multiselect() {
+    this.input.isMultiSelect = true
+    return this
+  }
 }
 
 export class InputBuilder<T, V extends InputValueType> extends BaseInputBuilder<T, V> {

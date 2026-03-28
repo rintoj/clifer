@@ -112,8 +112,12 @@ Clifer supports various input types with full TypeScript inference:
 // Boolean flag
 .option(input('force').description('Force operation'))
 
-// Choice input
+// Choice input (single select)
 .option(input('env').string().choices(['dev', 'staging', 'prod']))
+
+// Choice input (multi select - accepts comma-separated values)
+.option(input('languages').string().choices(['en', 'ml', 'fr']).multiselect())
+// CLI: --languages=en,ml  →  ['en', 'ml']
 
 // Required argument
 .argument(input('file').string().required())
@@ -233,6 +237,7 @@ Creates a new input (argument or option) with the following methods:
 - `.required()`: Mark as required
 - `.default(value)`: Set default value
 - `.choices(array)`: Limit to specific choices
+- `.multiselect()`: Allow multiple choices (comma-separated via CLI, checkbox prompt interactively)
 - `.prompt(text?)`: Enable interactive prompt
 - `.validate(fn)`: Add custom validation
 
