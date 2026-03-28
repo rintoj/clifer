@@ -32,6 +32,20 @@ function parseValue(
   const { type, choices } = input
   switch (type) {
     case InputType.String:
+      if (input.isMultiSelect && choices?.length) {
+        const values = typeof value === 'string' ? value.split(',').map(v => v.trim()) : [value]
+        const invalid = values.filter(v => !choices.includes(v))
+        if (invalid.length) {
+          throw new CliError(
+            `Invalid value "${invalid.join(', ')}" for the input "--${
+              input.name as string
+            }". You must provide ${toValues(choices)}`,
+            command,
+            parentCommands,
+          )
+        }
+        return values
+      }
       if (choices?.length && !choices.includes(value)) {
         throw new CliError(
           `Invalid value "${value}" for the input "--${
