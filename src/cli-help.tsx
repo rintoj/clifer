@@ -200,6 +200,70 @@ export function toHelp(command: Command<any>, prefix?: string, includeCommonInpu
 
 // --- Ink-based help rendering ---
 
+function SyntaxHighlightedOption({ text }: { text: string }) {
+  // Parse option text like "--service-name=<string>" or "--env=<dev|staging|prod>,..."
+  const match = text.match(/^(--)([a-z][-a-z0-9]*)(=<([^>]+)>(,\.\.\.)?)?(.*)$/)
+  if (!match) {
+    // Argument name or command name — use primary color
+    return <Text color={theme.colors.primary}>{text}</Text>
+  }
+  const [, dashes, name, , typeContent, many, rest] = match
+  return (
+    <Text>
+      <Text color={theme.colors.dim}>{dashes}</Text>
+      <Text color={theme.colors.warning}>{name}</Text>
+      {typeContent && (
+        <Text>
+          <Text color={theme.colors.dim}>=&lt;</Text>
+          <Text color={theme.colors.secondary}>{typeContent}</Text>
+          <Text color={theme.colors.dim}>&gt;</Text>
+          {many && <Text color={theme.colors.dim}>,...</Text>}
+        </Text>
+      )}
+      {rest && <Text>{rest}</Text>}
+    </Text>
+  )
+}
+
+function SyntaxHighlightedUsage({ text }: { text: string }) {
+  // Split usage into tokens and colorize each
+  const tokens = text.split(/(\[.*?\]|<.*?>|--[a-z][-a-z0-9]*(?:=<[^>]+>(?:,\.\.\.)?)?|\S+)/g)
+  return (
+    <Text>
+      {tokens.map((token, i) => {
+        if (!token || token === ' ') return <Text key={i}>{token}</Text>
+        // Bracketed optional: [--flag] or [name]
+        if (token.startsWith('[') && token.endsWith(']')) {
+          const inner = token.slice(1, -1)
+          return (
+            <Text key={i}>
+              <Text color={theme.colors.dim}>[</Text>
+              <SyntaxHighlightedOption text={inner} />
+              <Text color={theme.colors.dim}>]</Text>
+            </Text>
+          )
+        }
+        // Required angle brackets: <name|other>
+        if (token.startsWith('<') && token.endsWith('>')) {
+          const inner = token.slice(1, -1)
+          return (
+            <Text key={i}>
+              <Text color={theme.colors.dim}>&lt;</Text>
+              <Text color={theme.colors.primary}>{inner}</Text>
+              <Text color={theme.colors.dim}>&gt;</Text>
+            </Text>
+          )
+        }
+        // Bare option: --flag
+        if (token.startsWith('--')) {
+          return <SyntaxHighlightedOption key={i} text={token} />
+        }
+        return <Text key={i}>{token}</Text>
+      })}
+    </Text>
+  )
+}
+
 function HelpLine({
   left,
   right,
@@ -253,32 +317,47 @@ function HelpView({
   )
   const maxLeftWidth = dataLines.reduce((max, line) => Math.max(max, (line[0] ?? '').length), 0)
 
+  // Track current section for context-aware coloring
+  let currentSection = ''
+
   return (
     <Box flexDirection='column' paddingLeft={1}>
       <Box gap={1}>
         <Text color={theme.colors.success} bold>
           {joinWithSpace(prefix ?? '', command.name ?? '')}
         </Text>
-        <Text color={theme.colors.warning}>{usageParts}</Text>
+        <SyntaxHighlightedUsage text={usageParts} />
       </Box>
       <Box flexDirection='column' marginTop={1}>
         {allLines.map((line, i) => {
           const isSection =
             line.length === 1 && ['COMMANDS', 'ARGUMENTS', 'OPTIONS', 'COMMON'].includes(line[0])
           if (isSection) {
+            currentSection = line[0]
             return <HelpLine key={i} left={line[0]} isSection />
           }
           const left = line[0] ?? ''
           const isRequired = left.endsWith(' *')
           const leftText = isRequired ? left.slice(0, -2) : left
-          const paddedLeft = leftText.padEnd(maxLeftWidth - (isRequired ? 2 : 0))
+          const padding = generateSpaces(maxLeftWidth - leftText.length - (isRequired ? 2 : 0))
+          const isCommandOrArg = currentSection === 'COMMANDS' || currentSection === 'ARGUMENTS'
+          const isCommon = currentSection === 'COMMON'
           return (
             <Box key={i} gap={3}>
               <Text>
-                <Text color={theme.colors.warning}>{paddedLeft}</Text>
+                {isCommon ? (
+                  <Text color={theme.colors.dim}>{leftText}</Text>
+                ) : isCommandOrArg ? (
+                  <Text color={currentSection === 'COMMANDS' ? theme.colors.success : theme.colors.primary}>
+                    {leftText}
+                  </Text>
+                ) : (
+                  <SyntaxHighlightedOption text={leftText} />
+                )}
                 {isRequired && <Text color={theme.colors.error}> *</Text>}
+                <Text>{padding}</Text>
               </Text>
-              <Text>{line[1] ?? ''}</Text>
+              <Text color={isCommon ? theme.colors.dim : theme.colors.value}>{line[1] ?? ''}</Text>
             </Box>
           )
         })}
