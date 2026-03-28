@@ -148,6 +148,8 @@ $ myapp user list --format json
 
 Help is automatically generated for every level of the command tree:
 
+<img src="docs/help-output.png" width="600" />
+
 ```bash
 $ myapp --help
 

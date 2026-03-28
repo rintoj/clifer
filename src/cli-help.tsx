@@ -215,7 +215,16 @@ function SyntaxHighlightedOption({ text }: { text: string }) {
       {typeContent && (
         <Text>
           <Text color={theme.colors.dim}>=&lt;</Text>
-          <Text color={theme.colors.secondary}>{typeContent}</Text>
+          {typeContent.includes('|') ? (
+            typeContent.split('|').map((part, j, arr) => (
+              <Text key={j}>
+                <Text color={theme.colors.secondary}>{part}</Text>
+                {j < arr.length - 1 && <Text color={theme.colors.dim}>|</Text>}
+              </Text>
+            ))
+          ) : (
+            <Text color={theme.colors.secondary}>{typeContent}</Text>
+          )}
           <Text color={theme.colors.dim}>&gt;</Text>
           {many && <Text color={theme.colors.dim}>,...</Text>}
         </Text>
@@ -246,10 +255,20 @@ function SyntaxHighlightedUsage({ text }: { text: string }) {
         // Required angle brackets: <name|other>
         if (token.startsWith('<') && token.endsWith('>')) {
           const inner = token.slice(1, -1)
+          const isCommandList = inner.includes('|')
           return (
             <Text key={i}>
               <Text color={theme.colors.dim}>&lt;</Text>
-              <Text color={theme.colors.primary}>{inner}</Text>
+              {isCommandList ? (
+                inner.split('|').map((part, j, arr) => (
+                  <Text key={j}>
+                    <Text color={theme.colors.success}>{part}</Text>
+                    {j < arr.length - 1 && <Text color={theme.colors.dim}>|</Text>}
+                  </Text>
+                ))
+              ) : (
+                <Text color={theme.colors.primary}>{inner}</Text>
+              )}
               <Text color={theme.colors.dim}>&gt;</Text>
             </Text>
           )
