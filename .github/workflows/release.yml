@@ -18,10 +18,10 @@ jobs:
         uses: oven-sh/setup-bun@v1
         with:
           bun-version: 'latest'
-      - run: yarn
-      - run: yarn run lint
-      - run: yarn run build
-      - run: yarn run semantic-release
+      - run: npm install
+      - run: npm run lint
+      - run: npm run build
+      - run: npm run semantic-release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
