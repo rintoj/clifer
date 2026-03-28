@@ -246,6 +246,13 @@ function HelpView({
     includeCommonInputs ? toCommonInputNames(command).join(' ') : '',
   )
 
+  // Calculate consistent column width for alignment
+  const dataLines = allLines.filter(
+    line =>
+      !(line.length === 1 && ['COMMANDS', 'ARGUMENTS', 'OPTIONS', 'COMMON'].includes(line[0])),
+  )
+  const maxLeftWidth = dataLines.reduce((max, line) => Math.max(max, (line[0] ?? '').length), 0)
+
   return (
     <Box flexDirection='column' paddingLeft={1}>
       <Box gap={1}>
@@ -262,9 +269,10 @@ function HelpView({
             return <HelpLine key={i} left={line[0]} isSection />
           }
           const isRequired = line[1]?.startsWith('[Required]')
+          const paddedLeft = (line[0] ?? '').padEnd(maxLeftWidth)
           return (
             <Box key={i} gap={3}>
-              <Text color={theme.colors.warning}>{line[0]}</Text>
+              <Text color={theme.colors.warning}>{paddedLeft}</Text>
               <Text>
                 {isRequired && <Text color={theme.colors.error}>[Required] </Text>}
                 {isRequired ? line[1].replace('[Required] ', '') : (line[1] ?? '')}
