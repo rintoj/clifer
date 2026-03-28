@@ -62,8 +62,8 @@ class NonBooleanInputBuilder<T, V extends InputValueType> extends BaseInputBuild
     return this
   }
 
-  multiselect() {
-    this.input.isMultiSelect = true
+  many() {
+    this.input.isMany = true
     return this
   }
 }

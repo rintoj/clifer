@@ -32,7 +32,7 @@ function parseValue(
   const { type, choices } = input
   switch (type) {
     case InputType.String:
-      if (input.isMultiSelect) {
+      if (input.isMany) {
         const values: string[] = Array.isArray(value)
           ? value
           : typeof value === 'string'
