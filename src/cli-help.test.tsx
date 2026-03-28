@@ -89,17 +89,17 @@ describe('cli', () => {
 
         OPTIONS
 
-        --service-name=<string>   [Required] Name of the service
+        --service-name=<string> *   Name of the service
 
-        --instances=<number>      Number of instances
+        --instances=<number>        Number of instances
 
-        --dry-run                 Do not make changes but run in dry-run mode
+        --dry-run                   Do not make changes but run in dry-run mode
 
         COMMON
 
-        --help                    Show help
+        --help                      Show help
 
-        --doc                     Generate documentation
+        --doc                       Generate documentation
       `),
     )
   })

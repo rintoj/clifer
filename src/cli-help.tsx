@@ -108,8 +108,8 @@ function toOptionType(input: Input<any, any>): string {
 
 function toOptionHelp(input: Input<any, any>): string[] {
   return [
-    `--${input.name as string}${toOptionType(input)}`,
-    `${input.isRequired ? '[Required] ' : ''}${input.description ?? ''}`,
+    `--${input.name as string}${toOptionType(input)}${input.isRequired ? ' *' : ''}`,
+    input.description ?? '',
   ]
 }
 
@@ -268,15 +268,17 @@ function HelpView({
           if (isSection) {
             return <HelpLine key={i} left={line[0]} isSection />
           }
-          const isRequired = line[1]?.startsWith('[Required]')
-          const paddedLeft = (line[0] ?? '').padEnd(maxLeftWidth)
+          const left = line[0] ?? ''
+          const isRequired = left.endsWith(' *')
+          const leftText = isRequired ? left.slice(0, -2) : left
+          const paddedLeft = leftText.padEnd(maxLeftWidth - (isRequired ? 2 : 0))
           return (
             <Box key={i} gap={3}>
-              <Text color={theme.colors.warning}>{paddedLeft}</Text>
               <Text>
-                {isRequired && <Text color={theme.colors.error}>[Required] </Text>}
-                {isRequired ? line[1].replace('[Required] ', '') : (line[1] ?? '')}
+                <Text color={theme.colors.warning}>{paddedLeft}</Text>
+                {isRequired && <Text color={theme.colors.error}> *</Text>}
               </Text>
+              <Text>{line[1] ?? ''}</Text>
             </Box>
           )
         })}

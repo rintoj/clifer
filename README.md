@@ -64,18 +64,13 @@ $ greet --help
 
 greet   <name> [--greeting=<string>] [--help] [--doc] [--version]
 
-A friendly greeting CLI
-
 ARGUMENTS
-
   name                   Your name
 
 OPTIONS
-
   --greeting=<string>    Custom greeting
 
 COMMON
-
   --help                 Show help
   --doc                  Generate documentation
   --version              Show version
@@ -159,11 +154,9 @@ $ myapp --help
 myapp   <user> [--help] [--doc] [--version]
 
 COMMANDS
-
   user       User management
 
 COMMON
-
   --help     Show help
   --doc      Generate documentation
   --version  Show version
@@ -173,12 +166,10 @@ $ myapp user --help
 myapp user   <add|list> [--help] [--doc]
 
 COMMANDS
-
   add    Add a new user
   list   List all users
 
 COMMON
-
   --help   Show help
   --doc    Generate documentation
 ```
@@ -599,7 +590,7 @@ The help output uses these conventions:
 | `--opt=<number>`  | Number option                     |
 | `--opt=<a\|b\|c>` | Choice option                    |
 | `--opt=<a\|b>,...` | Multi-value choice (comma-separated) |
-| `[Required]`      | Shown in description for required options |
+| `*`               | Required indicator (shown after option name) |
 
 ### Programmatic API
 
@@ -867,10 +858,10 @@ ARGUMENTS
 
 OPTIONS
 
-  --environment=<local|dev|prod>      [Required] Environment
-  --cloud=<aws|gcloud>                Cloud provider
-  --aws-account-id=<string>           AWS account id
-  --local-port=<4000|4001|4002>       Local port
+  --environment=<local|dev|prod> *   Environment
+  --cloud=<aws|gcloud>               Cloud provider
+  --aws-account-id=<string>          AWS account id
+  --local-port=<4000|4001|4002>      Local port
 
 COMMON
 
