@@ -2,7 +2,7 @@
 
 [![npm version](https://img.shields.io/npm/v/clifer.svg)](https://www.npmjs.com/package/clifer)
 [![npm downloads](https://img.shields.io/npm/dm/clifer.svg)](https://www.npmjs.com/package/clifer)
-[![license](https://img.shields.io/npm/l/clifer.svg)](https://github.com/rintoj/clifer/blob/master/LICENSE)
+[![license](https://img.shields.io/npm/l/clifer.svg)](https://github.com/rintoj/clifer/blob/main/LICENSE)
 
 A lightweight, type-safe TypeScript library for building beautiful command-line interfaces with zero dependencies.
 
