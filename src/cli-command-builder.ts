@@ -1,5 +1,13 @@
-import { input, InputOrBuilder, isInputBuilder } from './cli-input-builder'
-import { Command, FormatProps, Input, InputType, InputValueType, isInput, Kind } from './cli-types'
+import { type InputOrBuilder, input, isInputBuilder } from './cli-input-builder'
+import {
+  type Command,
+  type FormatProps,
+  type Input,
+  InputType,
+  type InputValueType,
+  isInput,
+  Kind,
+} from './cli-types'
 
 export type CommandBuilderType<T> = CommandBuilder<T> | CommandBuilderBase<T>
 
@@ -42,10 +50,10 @@ class CommandBuilderBase<T> {
   }
 
   format(): CommandBuilderBase<T & FormatProps> {
-    this.cmd.inputs['json'] = input<{ json: boolean }, any>('json')
+    this.cmd.inputs.json = input<{ json: boolean }, any>('json')
       .description('Output as JSON')
       .toInput()
-    this.cmd.inputs['text'] = input<{ text: boolean }, any>('text')
+    this.cmd.inputs.text = input<{ text: boolean }, any>('text')
       .description('Output as plain text')
       .toInput()
     return this as unknown as CommandBuilderBase<T & FormatProps>
@@ -56,7 +64,7 @@ class CommandBuilderBase<T> {
     return this
   }
 
-  handle(action: (props: T) => void | Promise<any>) {
+  handle(action: (props: T) => undefined | Promise<any>) {
     this.cmd.handler = action
     return this
   }

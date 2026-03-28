@@ -1,6 +1,6 @@
-import { spawnSync } from 'child_process'
-import * as fs from 'fs'
-import * as path from 'path'
+import { spawnSync } from 'node:child_process'
+import * as fs from 'node:fs'
+import * as path from 'node:path'
 import { command } from '../cli-command-builder'
 import { input } from '../cli-input-builder'
 

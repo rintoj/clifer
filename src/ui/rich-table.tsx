@@ -40,7 +40,7 @@ function getTermWidth(): number {
 }
 
 function pad(text: string, width: number): string {
-  if (text.length > width) return text.slice(0, width - 1) + '…'
+  if (text.length > width) return `${text.slice(0, width - 1)}…`
   return text + ' '.repeat(width - text.length)
 }
 
@@ -161,7 +161,7 @@ export function RichTable<T>({ data, columns, startIndex = 0, pagination }: Rich
   const { cols, widths } = selectColumns(data, columns, startIndex)
 
   return (
-    <Box flexDirection="column">
+    <Box flexDirection='column'>
       <Text color={bc}>{hline(widths, '┌', '┬', '┐')}</Text>
 
       <Row

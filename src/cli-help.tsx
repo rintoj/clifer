@@ -1,6 +1,6 @@
 import { Box, Text } from 'ink'
 import React from 'react'
-import { Command, Input, InputType, Kind, isCommand, isInput } from './cli-types'
+import { type Command, type Input, InputType, isCommand, isInput, Kind } from './cli-types'
 import { renderOnce } from './ui/render'
 import { theme } from './ui/theme'
 
@@ -81,7 +81,7 @@ function formatCommand(...lines: Array<string | string[]>) {
   return [
     SPACER,
     lines
-      .map(value => (value instanceof Array ? value.join(NEW_LINE) : value))
+      .map(value => (Array.isArray(value) ? value.join(NEW_LINE) : value))
       .join(NEW_LINE + NEW_LINE),
     SPACER,
   ].join(NEW_LINE)
@@ -102,8 +102,8 @@ function toOptionType(input: Input<any, any>): string {
   return input.type === InputType.String
     ? `=<string>${input.isMany ? ',...' : ''}`
     : input.type === InputType.Number
-    ? '=<number>'
-    : ''
+      ? '=<number>'
+      : ''
 }
 
 function toOptionHelp(input: Input<any, any>): string[] {
@@ -200,7 +200,15 @@ export function toHelp(command: Command<any>, prefix?: string, includeCommonInpu
 
 // --- Ink-based help rendering ---
 
-function HelpLine({ left, right, isSection }: { left: string; right?: string; isSection?: boolean }) {
+function HelpLine({
+  left,
+  right,
+  isSection,
+}: {
+  left: string
+  right?: string
+  isSection?: boolean
+}) {
   if (isSection) {
     return (
       <Box marginTop={1}>
@@ -216,7 +224,15 @@ function HelpLine({ left, right, isSection }: { left: string; right?: string; is
   )
 }
 
-function HelpView({ command, prefix, includeCommonInputs }: { command: Command<any>; prefix?: string; includeCommonInputs?: boolean }) {
+function HelpView({
+  command,
+  prefix,
+  includeCommonInputs,
+}: {
+  command: Command<any>
+  prefix?: string
+  includeCommonInputs?: boolean
+}) {
   const commands = toCommandsHelp(command)
   const args = toArgumentsHelp(command)
   const inputs = toInputsHelp(command)
@@ -231,14 +247,17 @@ function HelpView({ command, prefix, includeCommonInputs }: { command: Command<a
   )
 
   return (
-    <Box flexDirection="column" paddingLeft={1}>
+    <Box flexDirection='column' paddingLeft={1}>
       <Box gap={1}>
-        <Text color={theme.colors.success} bold>{joinWithSpace(prefix ?? '', command.name ?? '')}</Text>
+        <Text color={theme.colors.success} bold>
+          {joinWithSpace(prefix ?? '', command.name ?? '')}
+        </Text>
         <Text color={theme.colors.warning}>{usageParts}</Text>
       </Box>
-      <Box flexDirection="column" marginTop={1}>
+      <Box flexDirection='column' marginTop={1}>
         {allLines.map((line, i) => {
-          const isSection = line.length === 1 && ['COMMANDS', 'ARGUMENTS', 'OPTIONS', 'COMMON'].includes(line[0])
+          const isSection =
+            line.length === 1 && ['COMMANDS', 'ARGUMENTS', 'OPTIONS', 'COMMON'].includes(line[0])
           if (isSection) {
             return <HelpLine key={i} left={line[0]} isSection />
           }
@@ -248,7 +267,7 @@ function HelpView({ command, prefix, includeCommonInputs }: { command: Command<a
               <Text color={theme.colors.warning}>{line[0]}</Text>
               <Text>
                 {isRequired && <Text color={theme.colors.error}>[Required] </Text>}
-                {isRequired ? line[1].replace('[Required] ', '') : line[1] ?? ''}
+                {isRequired ? line[1].replace('[Required] ', '') : (line[1] ?? '')}
               </Text>
             </Box>
           )
@@ -260,13 +279,12 @@ function HelpView({ command, prefix, includeCommonInputs }: { command: Command<a
 
 function CliErrorView({ message, commandText }: { message: string; commandText: string }) {
   return (
-    <Box flexDirection="column" paddingLeft={1}>
+    <Box flexDirection='column' paddingLeft={1}>
       <Text color={theme.colors.error}>
-        {'\n'}Error: {message}{'\n'}
+        {'\n'}Error: {message}
+        {'\n'}
       </Text>
-      <Text color={theme.colors.warning}>
-        Run &quot;{commandText} --help&quot; to see help
-      </Text>
+      <Text color={theme.colors.warning}>Run &quot;{commandText} --help&quot; to see help</Text>
     </Box>
   )
 }

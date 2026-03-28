@@ -1,8 +1,8 @@
 import cardinal from 'cardinal'
 import markdown from 'markdown-it'
 import terminal from 'markdown-it-terminal'
-import React from 'react'
-import { OutputFormat } from './cli-types'
+import type React from 'react'
+import type { OutputFormat } from './cli-types'
 import { renderOnce } from './ui/render'
 
 export type RichRenderer<T> = (data: T) => React.ReactElement
@@ -44,7 +44,7 @@ export function wrapText(text: string, maxWidth: number): string[] {
   const lines: string[] = []
   let current = ''
   for (const word of words) {
-    const test = current ? current + ' ' + word : word
+    const test = current ? `${current} ${word}` : word
     if (stripAnsi(test).length > maxWidth && current) {
       lines.push(current)
       current = word
@@ -123,12 +123,9 @@ function renderMarkdownTable(tableLines: string[]) {
   const dim = '\u001b[2m'
   const reset = '\u001b[0m'
   const bold = '\u001b[1m'
-  const topBorder =
-    dim + '  ┌' + colWidths.map((w: number) => '─'.repeat(w + 2)).join('┬') + '┐' + reset
-  const midBorder =
-    dim + '  ├' + colWidths.map((w: number) => '─'.repeat(w + 2)).join('┼') + '┤' + reset
-  const bottomBorder =
-    dim + '  └' + colWidths.map((w: number) => '─'.repeat(w + 2)).join('┴') + '┘' + reset
+  const topBorder = `${dim}  ┌${colWidths.map((w: number) => '─'.repeat(w + 2)).join('┬')}┐${reset}`
+  const midBorder = `${dim}  ├${colWidths.map((w: number) => '─'.repeat(w + 2)).join('┼')}┤${reset}`
+  const bottomBorder = `${dim}  └${colWidths.map((w: number) => '─'.repeat(w + 2)).join('┴')}┘${reset}`
 
   const lines: string[] = [topBorder]
   for (let r = 0; r < rows.length; r++) {
@@ -144,7 +141,7 @@ function renderMarkdownTable(tableLines: string[]) {
       const cells = colWidths.map((w: number, i: number) => {
         const cell = wrappedCells[i][l] ?? ''
         const padLen = w - stripAnsi(cell).length
-        return ' ' + cell + ' '.repeat(Math.max(0, padLen) + 1)
+        return ` ${cell}${' '.repeat(Math.max(0, padLen) + 1)}`
       })
       lines.push(
         '  ' +
@@ -152,7 +149,7 @@ function renderMarkdownTable(tableLines: string[]) {
           '│' +
           reset +
           prefix +
-          cells.join(dim + '│' + reset) +
+          cells.join(`${dim}│${reset}`) +
           dim +
           '│' +
           reset +
@@ -277,9 +274,9 @@ export function formatAsTable(data: Record<string, any>): string {
 export function formatAsList(items: any[], fields?: string[]): string {
   if (items.length === 0) return '_No results_'
   const keys = fields ?? Object.keys(items[0])
-  const header = '| ' + keys.join(' | ') + ' |'
-  const separator = '| ' + keys.map(() => '---').join(' | ') + ' |'
-  const rows = items.map(item => '| ' + keys.map(k => item[k] ?? '-').join(' | ') + ' |')
+  const header = `| ${keys.join(' | ')} |`
+  const separator = `| ${keys.map(() => '---').join(' | ')} |`
+  const rows = items.map(item => `| ${keys.map(k => item[k] ?? '-').join(' | ')} |`)
   return [header, separator, ...rows].join('\n')
 }
 

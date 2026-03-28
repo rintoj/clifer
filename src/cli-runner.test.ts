@@ -7,7 +7,6 @@ function trim(output: string) {
     .join('\n')
 }
 
-
 describe('cli', () => {
   test('should run a simple cli', async () => {
     const run = jest.fn()
@@ -427,10 +426,7 @@ describe('cli', () => {
   test('should parse many option without choices', async () => {
     const run = jest.fn()
     await runCli(
-      cli<any>('mycli')
-        .version('1.0')
-        .option(input('tags').string().many())
-        .handle(run),
+      cli<any>('mycli').version('1.0').option(input('tags').string().many()).handle(run),
       ['--tags=a,b,c'],
     )
     expect(run).toHaveBeenCalledWith({ tags: ['a', 'b', 'c'] })

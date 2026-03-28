@@ -10,7 +10,7 @@ interface CardProps {
 
 export function Card({ title, borderColor = theme.colors.primary, children }: CardProps) {
   return (
-    <Box flexDirection="column">
+    <Box flexDirection='column'>
       {title && (
         <Box marginBottom={1}>
           <Text bold color={borderColor}>
@@ -19,8 +19,8 @@ export function Card({ title, borderColor = theme.colors.primary, children }: Ca
         </Box>
       )}
       <Box
-        flexDirection="column"
-        borderStyle="bold"
+        flexDirection='column'
+        borderStyle='bold'
         borderLeft
         borderRight={false}
         borderTop={false}

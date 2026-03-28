@@ -1,5 +1,5 @@
-import { readFileSync, writeFileSync } from 'fs'
-import { resolve } from 'path'
+import { readFileSync, writeFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { command, input } from '../../..'
 
 enum Environment {
@@ -31,7 +31,7 @@ interface Props {
 async function loadFromEnv() {
   try {
     return JSON.parse(readFileSync(ENV_FILE, { encoding: 'utf-8' }).toString())
-  } catch (e) {
+  } catch (_e) {
     return {} as any
   }
 }

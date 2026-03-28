@@ -4,7 +4,14 @@ import { CliError } from './cli-error'
 import { CliExpectedError } from './cli-expected-error'
 import { showCliError, showDocumentation, showHelp, toDocumentation, toHelp } from './cli-help'
 import { prompt } from './cli-prompt'
-import { type Command, type Input, InputType, isCommand, isInput, OutputFormat } from './cli-types'
+import {
+  type Command,
+  type Input,
+  InputType,
+  isCommand,
+  isInput,
+  type OutputFormat,
+} from './cli-types'
 
 interface Props {
   help?: boolean
@@ -35,8 +42,8 @@ function parseValue(
         const values: string[] = Array.isArray(value)
           ? value
           : typeof value === 'string'
-          ? value.split(',').map(v => v.trim())
-          : [String(value)]
+            ? value.split(',').map(v => v.trim())
+            : [String(value)]
         if (choices?.length) {
           const invalid = values.filter(v => !(choices as string[]).includes(v))
           if (invalid.length) {
@@ -66,9 +73,9 @@ function parseValue(
         typeof value === 'number'
           ? value
           : typeof value === 'string'
-          ? parseInt(value, undefined)
-          : undefined
-      if (targetValue && !isNaN(targetValue)) return targetValue
+            ? parseInt(value, undefined)
+            : undefined
+      if (targetValue && !Number.isNaN(targetValue)) return targetValue
       throw new CliError(
         `Invalid value "${value}" for the input "--${
           input.name as string

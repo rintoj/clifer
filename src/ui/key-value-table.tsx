@@ -15,7 +15,7 @@ export function KeyValueTable({ data, title, borderColor }: KeyValueTableProps) 
 
   return (
     <Card title={title} borderColor={borderColor}>
-      <Box flexDirection="column">
+      <Box flexDirection='column'>
         {entries.map(([key, value]) => (
           <LabelValue
             key={key}

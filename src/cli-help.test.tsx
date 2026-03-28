@@ -1,8 +1,7 @@
 import { cli } from './cli-builder'
-import { toDocumentation, toHelp } from './cli-help'
 import { command } from './cli-command-builder'
+import { toDocumentation, toHelp } from './cli-help'
 import { input } from './cli-input-builder'
-
 
 function trim(output: string) {
   return output
@@ -201,9 +200,20 @@ describe('cli', () => {
   test('should show many indicator for options with many()', () => {
     const help = toHelp(
       cli<any>('mycli')
-        .option(input('languages').description('Supported languages').string().choices(['en', 'ml', 'fr']).many())
+        .option(
+          input('languages')
+            .description('Supported languages')
+            .string()
+            .choices(['en', 'ml', 'fr'])
+            .many(),
+        )
         .option(input('tags').description('Tags to apply').string().many())
-        .option(input('env').description('Target environment').string().choices(['dev', 'staging', 'prod']))
+        .option(
+          input('env')
+            .description('Target environment')
+            .string()
+            .choices(['dev', 'staging', 'prod']),
+        )
         .toCommand(),
       '',
       true,
