@@ -21,7 +21,7 @@ import {
   renderOnce,
   runCli,
 } from '..'
-import type { OutputFormat } from '../cli-types'
+import type { FormatProps, OutputFormat } from '../cli-types'
 
 // Demonstrates: all output formats and Ink UI components added in this PR.
 
@@ -169,14 +169,13 @@ function showExpectedError() {
 
 // --- CLI that ties it all together ---
 
-interface Props {
+interface Props extends FormatProps {
   demo: string
-  format: OutputFormat
 }
 
 async function run(props: Props) {
   // If --format is passed without a demo, default to 'render'
-  const demo = props.demo ?? (props.format ? 'render' : 'all')
+  const demo = props.demo ?? (props.format !== 'default' ? 'render' : 'all')
 
   switch (demo) {
     case 'print':
@@ -186,7 +185,7 @@ async function run(props: Props) {
       await showUIComponents()
       break
     case 'render':
-      await showRenderDispatcher(props.format ?? 'rich')
+      await showRenderDispatcher(props.format ?? 'default')
       break
     case 'error':
       showExpectedError()
@@ -206,12 +205,8 @@ const program = cli<Props>('output-demo')
       .string()
       .choices(['print', 'ui', 'render', 'error', 'all']),
   )
-  .option(
-    input('format')
-      .description('Output format for render demo')
-      .string()
-      .choices(['json', 'text', 'rich']),
-  )
+  // .format() adds --json and --text flags, injects `format: OutputFormat` into props
+  .format()
   .handle(run)
 
 void runCli(program)

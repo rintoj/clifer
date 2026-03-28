@@ -140,10 +140,10 @@ bun run src/example/output.tsx print
 # Ink UI components demo (Heading, Message, StatusBadge, LabelValue, KeyValueTable, Card, RichTable, ErrorBox)
 bun run src/example/output.tsx ui
 
-# render() dispatcher with --format flag
+# render() dispatcher with --format option
 bun run src/example/output.tsx render --format=json
 bun run src/example/output.tsx render --format=text
-bun run src/example/output.tsx render --format=rich
+bun run src/example/output.tsx render
 
 # CliExpectedError — clean error without stack trace
 bun run src/example/output.tsx error
@@ -506,22 +506,42 @@ await renderOnce(
 await renderOnce(<ErrorBox message="Database unreachable at port 5432" />)
 ```
 
-### `render()` Dispatcher
+### `.format()` and `render()` Dispatcher
 
-Automatically picks the right output format based on a `--format` flag:
+Use `.format()` on a command to add a `--format=<default|text|json>` option. It injects a typed `format: OutputFormat` property into your handler props.
 
 ```tsx
-import { render } from 'clifer'
-import type { OutputFormat } from 'clifer'
+import React from 'react'
+import { cli, input, render, runCli, KeyValueTable } from 'clifer'
+import type { FormatProps } from 'clifer'
 
-await render(data, format, data => <KeyValueTable title="Info" data={data} />)
+interface Props extends FormatProps {
+  name: string
+}
+
+const program = cli<Props>('status')
+  .argument(input('name').string().required())
+  .format()  // adds --format=<default|text|json> option
+  .handle(async (props) => {
+    const data = { name: props.name, status: 'active' }
+    // render() picks the right output based on props.format
+    await render(data, props.format, d => <KeyValueTable title="Status" data={d} />)
+  })
+
+void runCli(program)
 ```
 
-| Format | Behavior |
-| --- | --- |
-| `json` | Calls `printJson(data)` |
-| `text` | Calls `printText(data)` or `printTextList(data)` |
-| `rich` | Renders the Ink component via `renderOnce()` |
+```sh
+status my-app                 # default — renders KeyValueTable via Ink
+status my-app --format=json   # JSON output
+status my-app --format=text   # plain text key-value pairs
+```
+
+| Flag | `format` Value | Behavior |
+| --- | --- | --- |
+| _(none)_ | `'default'` | Renders the Ink component via `renderOnce()` |
+| `--format=json` | `'json'` | Calls `printJson(data)` |
+| `--format=text` | `'text'` | Calls `printText(data)` or `printTextList(data)` |
 
 ### Error Handling
 
