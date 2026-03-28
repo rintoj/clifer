@@ -50,11 +50,11 @@ class CommandBuilderBase<T> {
   }
 
   format(): CommandBuilderBase<T & FormatProps> {
-    this.cmd.inputs.json = input<{ json: boolean }, any>('json')
-      .description('Output as JSON')
-      .toInput()
-    this.cmd.inputs.text = input<{ text: boolean }, any>('text')
-      .description('Output as plain text')
+    this.cmd.inputs.format = input<{ format: string }, string>('format')
+      .description('Output format')
+      .string()
+      .choices(['default', 'text', 'json'])
+      .default('default')
       .toInput()
     return this as unknown as CommandBuilderBase<T & FormatProps>
   }

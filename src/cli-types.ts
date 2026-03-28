@@ -51,7 +51,7 @@ export function isInput<T, V extends InputValueType>(cmd: any): cmd is Input<T, 
   return cmd?.kind === Kind.Input
 }
 
-export type OutputFormat = 'text' | 'json' | 'rich'
+export type OutputFormat = 'default' | 'text' | 'json'
 
 export interface FormatProps {
   format: OutputFormat

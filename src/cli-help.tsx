@@ -8,7 +8,7 @@ const SPACER = '   '
 const NEW_LINE = `\n`
 const AVAILABLE_WIDTH =
   typeof jest !== 'undefined' ? 80 : (process?.stdout?.columns ?? 80) - SPACER.length
-const COMMON_OPTIONS = ['version', 'help', 'doc', 'json', 'text']
+const COMMON_OPTIONS = ['version', 'help', 'doc']
 
 function extractInputs(command: Command<any>, commonOptions = false) {
   return Object.values(command.inputs)

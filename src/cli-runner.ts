@@ -10,7 +10,6 @@ import {
   InputType,
   isCommand,
   isInput,
-  type OutputFormat,
 } from './cli-types'
 
 interface Props {
@@ -250,13 +249,7 @@ export async function runCli<T>(
     const allProps = await promptAllMissingValues(command, initialProps, commands)
     validateMissingArgs(command, allProps, commands)
     if (!command.handler) return showCliHelp(command, commands)
-    const hasFormatOption = 'json' in command.inputs
-    let finalProps = allProps
-    if (hasFormatOption) {
-      const format: OutputFormat = allProps.json ? 'json' : allProps.text ? 'text' : 'rich'
-      const { json: _j, text: _t, ...cleanProps } = allProps
-      finalProps = { ...cleanProps, format }
-    }
+    const finalProps = allProps
     return await command.handler(finalProps as any)
   } catch (e) {
     if (e instanceof CliError) {
