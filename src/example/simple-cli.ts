@@ -1,6 +1,6 @@
 import { cli, input, runCli } from '..'
 
-function run(props: any) {
+async function run(props: any) {
   // handle the action here
   console.log({ props })
 }

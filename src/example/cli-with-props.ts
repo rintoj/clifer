@@ -13,7 +13,7 @@ interface Props {
   dryRun?: boolean
 }
 
-function run(props: Props) {
+async function run(props: Props) {
   // handle the action here
   console.log({ props })
 }

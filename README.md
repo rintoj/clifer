@@ -61,6 +61,24 @@ $ greet World --greeting Hey
 Hey, World!
 
 $ greet --help
+
+greet   <name> [--greeting=<string>] [--help] [--doc] [--version]
+
+A friendly greeting CLI
+
+ARGUMENTS
+
+  name                   Your name
+
+OPTIONS
+
+  --greeting=<string>    Custom greeting
+
+COMMON
+
+  --help                 Show help
+  --doc                  Generate documentation
+  --version              Show version
 ```
 
 ## Input Types
@@ -129,8 +147,40 @@ runCli(program)
 ```
 
 ```bash
-myapp user add "John Doe" john@example.com
-myapp user list --format json
+$ myapp user add "John Doe" john@example.com
+$ myapp user list --format json
+```
+
+Help is automatically generated for every level of the command tree:
+
+```bash
+$ myapp --help
+
+myapp   <user> [--help] [--doc] [--version]
+
+COMMANDS
+
+  user       User management
+
+COMMON
+
+  --help     Show help
+  --doc      Generate documentation
+  --version  Show version
+
+$ myapp user --help
+
+myapp user   <add|list> [--help] [--doc]
+
+COMMANDS
+
+  add    Add a new user
+  list   List all users
+
+COMMON
+
+  --help   Show help
+  --doc    Generate documentation
 ```
 
 ## Interactive Prompts
@@ -500,12 +550,65 @@ $ myapp user --help   # Help for a specific subcommand
 $ myapp --doc         # Full markdown documentation
 ```
 
+The `--doc` flag generates complete markdown documentation for your entire CLI, including all subcommands:
+
+```markdown
+# myapp
+
+​```sh
+myapp   <user> [--help] [--doc] [--version]
+
+COMMANDS
+
+  user       User management
+
+COMMON
+
+  --help     Show help
+  --doc      Generate documentation
+  --version  Show version
+​```
+
+## myapp user add
+
+Add a new user
+
+​```sh
+myapp user add   <name> <email> [--help] [--doc]
+​```
+
+## myapp user list
+
+List all users
+
+​```sh
+myapp user list   [--format=<json|table>] [--help] [--doc]
+​```
+```
+
+### Help Format Reference
+
+The help output uses these conventions:
+
+| Notation          | Meaning                           |
+| ----------------- | --------------------------------- |
+| `<name>`          | Required argument                 |
+| `[name]`          | Optional argument                 |
+| `--flag`          | Boolean flag                      |
+| `--opt=<string>`  | String option                     |
+| `--opt=<number>`  | Number option                     |
+| `--opt=<a\|b\|c>` | Choice option                    |
+| `--opt=<a\|b>,...` | Multi-value choice (comma-separated) |
+| `[Required]`      | Shown in description for required options |
+
+### Programmatic API
+
 You can also use the help and documentation functions programmatically:
 
 ```typescript
-import { showCliHelp, showDocumentation, showCliError } from 'clifer'
+import { showCliHelp, showDocumentation, showCliError, toHelp, toDocumentation } from 'clifer'
 
-// Render help for a command
+// Render Ink help screen for a command
 showCliHelp(command, parentCommands)
 
 // Generate and print markdown documentation
@@ -513,6 +616,12 @@ showDocumentation(command, parentCommands)
 
 // Display a formatted error box
 showCliError('Something went wrong', 'myapp deploy')
+
+// Get help as a plain text string
+const helpText = toHelp(command, prefix, includeCommonInputs)
+
+// Get documentation as a markdown string array
+const docs = toDocumentation(command)
 ```
 
 ## Scaffolding CLI
@@ -637,6 +746,148 @@ const program = cli('todo')
   .command(doneCommand)
 
 runCli(program)
+```
+
+```bash
+$ todo --help
+
+todo   <add|list|done> [--help] [--doc] [--version]
+
+Simple TODO manager
+
+COMMANDS
+
+  add    Add a new todo
+  list   List todos
+  done   Mark todo as done
+
+COMMON
+
+  --help      Show help
+  --doc       Generate documentation
+  --version   Show version
+
+$ todo add "Buy groceries"
+Added: "Buy groceries"
+
+$ todo list
+○ [1711234567890] Buy groceries
+
+$ todo done 1711234567890
+Marked as done: "Buy groceries"
+```
+
+### Real-World Example: Interactive Config with Async Loading
+
+This example demonstrates `.load()` for async configuration, `.prompt()` for interactive inputs, choices, defaults, and mixed argument/option patterns:
+
+```typescript
+import { readFileSync, writeFileSync } from 'node:fs'
+import { resolve } from 'node:path'
+import { cli, input, runCli } from 'clifer'
+
+interface Props {
+  name?: string
+  environment: string
+  cloud?: string
+  awsAccountId: string
+  localPort?: number
+}
+
+const ENV_FILE = resolve(__dirname, 'env.json')
+
+const program = cli<Props>('configure')
+  .version('1.0.0')
+  .description('Configure environment for this project')
+
+  // Positional argument with interactive prompt
+  .argument(input('name').description('Project name').string().prompt())
+
+  // Required option with choices and default
+  .option(
+    input('environment')
+      .description('Environment')
+      .string()
+      .required()
+      .choices(['local', 'dev', 'prod'])
+      .default('dev')
+      .prompt(),
+  )
+
+  // Optional option with choices
+  .option(
+    input('cloud')
+      .description('Cloud provider')
+      .string()
+      .choices(['aws', 'gcloud']),
+  )
+
+  // Option with interactive prompt
+  .option(input('awsAccountId').description('AWS account id').string().prompt())
+
+  // Number option with choices and prompt
+  .option(
+    input('localPort')
+      .description('Local port')
+      .number()
+      .choices([4000, 4001, 4002])
+      .prompt(),
+  )
+
+  // Load existing config before parsing arguments
+  .load(async () => {
+    try {
+      return JSON.parse(readFileSync(ENV_FILE, 'utf-8'))
+    } catch {
+      return {}
+    }
+  })
+
+  // Handle the command
+  .handle(async (props) => {
+    writeFileSync(ENV_FILE, JSON.stringify(props, null, 2), 'utf-8')
+    console.log('Configuration saved!')
+  })
+
+runCli(program)
+```
+
+```bash
+$ configure --help
+
+configure   [name] --environment=<local|dev|prod> [--cloud=<aws|gcloud>]
+[--aws-account-id=<string>] [--local-port=<4000|4001|4002>] [--help] [--doc]
+[--version]
+
+Configure environment for this project
+
+ARGUMENTS
+
+  name                                Project name
+
+OPTIONS
+
+  --environment=<local|dev|prod>      [Required] Environment
+  --cloud=<aws|gcloud>                Cloud provider
+  --aws-account-id=<string>           AWS account id
+  --local-port=<4000|4001|4002>       Local port
+
+COMMON
+
+  --help                              Show help
+  --doc                               Generate documentation
+  --version                           Show version
+
+# Run with arguments
+$ configure myapp --environment=prod --cloud=aws
+
+# Run interactively (prompts for missing values)
+$ configure
+? Project name? _
+? Environment? (dev/local/prod) _
+? AWS account id? _
+? Local port? (4000/4001/4002) _
+Configuration saved!
 ```
 
 ## API Reference

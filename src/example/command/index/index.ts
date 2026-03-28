@@ -6,7 +6,7 @@ interface Props {
   dryRun?: boolean
 }
 
-function run(props: Props) {
+async function run(props: Props) {
   console.log({ props })
 }
 
