@@ -260,7 +260,8 @@ export async function runCli<T>(
       const name = isCommandBuilder(commandOrBuilder)
         ? commandOrBuilder.toCommand().name
         : commandOrBuilder.name
-      return showCliError(e.message, name)
+      showCliError(e.message, name)
+      process.exit(1)
     }
     throw e
   }

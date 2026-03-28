@@ -13,18 +13,24 @@ const statusColors: Record<string, string> = {
 }
 
 interface StatusBadgeProps {
-  status: string
+  label?: string
+  status?: string
+  value?: string
 }
 
 function formatStatus(status: string): string {
   return status.charAt(0).toUpperCase() + status.slice(1).toLowerCase()
 }
 
-export function StatusBadge({ status }: StatusBadgeProps) {
-  const color = statusColors[status.toLowerCase()] ?? theme.colors.label
+export function StatusBadge({ label, status, value }: StatusBadgeProps) {
+  const effectiveStatus = status ?? value ?? 'inactive'
+  const color = statusColors[effectiveStatus.toLowerCase()] ?? theme.colors.label
   return (
-    <Text color={color}>
-      {theme.symbols.bullet} {formatStatus(status)}
+    <Text>
+      {label && <Text color={theme.colors.label}>{label} </Text>}
+      <Text color={color}>
+        {theme.symbols.bullet} {formatStatus(effectiveStatus)}
+      </Text>
     </Text>
   )
 }
