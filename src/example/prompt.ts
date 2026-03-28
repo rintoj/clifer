@@ -1,55 +1,59 @@
-import { input } from '../cli-input-builder'
-import { prompt } from '../cli-prompt'
+import { input, prompt } from '..'
+
+// Demonstrates all interactive prompt types: boolean, string, string with choices,
+// number, number with choices, and multi-input prompts.
 
 async function run() {
-  // yes/no confirmation
+  // --- Boolean prompt (yes/no confirmation) ---
   const { overwrite } = await prompt(
-    input('overwrite').description('Should overwrite?').prompt('Should overwrite?'),
+    input('overwrite').description('Should overwrite existing files?').prompt('Overwrite existing?'),
   )
   console.log({ overwrite })
 
-  // string prompt
+  // --- String prompt ---
   const { projectName } = await prompt(
     input('projectName')
       .description('Name of the project')
       .string()
-      .prompt('What is the name of the project?'),
+      .prompt('What is the project name?'),
   )
   console.log({ projectName })
 
-  // string prompt with auto complete
+  // --- String prompt with autocomplete choices ---
   const { environment } = await prompt(
     input('environment')
-      .description('Environment')
+      .description('Deployment environment')
       .string()
-      .prompt('Enter environment')
-      .choices(['local', 'dev', 'prod']),
+      .choices(['local', 'dev', 'staging', 'prod'])
+      .prompt('Select environment'),
   )
   console.log({ environment })
 
-  // number prompt
+  // --- Number prompt ---
   const { port } = await prompt(
-    input('port').description('Server port').number().prompt('Enter port'),
+    input('port').description('Server port number').number().prompt('Enter port number'),
   )
   console.log({ port })
 
-  // number prompt with choices
+  // --- Number prompt with choices ---
   const { diskSize } = await prompt(
     input('diskSize')
-      .description('Disk size to use the cloud')
+      .description('Disk size for cloud instance')
       .number()
       .choices([10, 20, 50, 100])
-      .prompt('Disk sizes (in GB)'),
+      .prompt('Select disk size (GB)'),
   )
   console.log({ diskSize })
 
-  // multiple inputs together
-  const output = await prompt(
+  // --- Multiple prompts at once ---
+  const config = await prompt(
     input('firstName').description('First name').string().prompt(),
     input('lastName').description('Last name').string().prompt(),
-    input('gender').description('Gender').string().choices(['Male', 'Female']).prompt(),
+    input('role').description('Role').string().choices(['admin', 'editor', 'viewer']).prompt(),
+    input('age').description('Age').number().prompt(),
+    input('newsletter').description('Subscribe to newsletter?').prompt('Subscribe?'),
   )
-  console.log(output)
+  console.log(config)
 }
 
 run().catch(e => console.error(e))

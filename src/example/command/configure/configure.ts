@@ -2,6 +2,9 @@ import { readFileSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { command, input } from '../../..'
 
+// Demonstrates: subcommands with .load() for async config, .prompt() for interactive
+// inputs, .choices(), .default(), .required(), and mixed string/number options.
+
 enum Environment {
   Local = 'local',
   Dev = 'dev',
@@ -11,21 +14,20 @@ enum Environment {
 enum CloudProvider {
   Aws = 'aws',
   GCloud = 'gcloud',
+  Azure = 'azure',
 }
 
-const ENVIRONMENTS = [Environment.Local, Environment.Dev, Environment.Prod]
-const CLOUD_PROVIDER = [CloudProvider.Aws, CloudProvider.GCloud]
 const ENV_FILE = resolve(__dirname, '..', '..', '..', '..', 'env.json')
 
 interface Props {
+  name: string
   environment: Environment
-  cloud?: CloudProvider
+  cloud: CloudProvider
   awsAccountId: string
   awsAccessKey: string
-  awsSecret?: string
-  awsRegion?: string
-  name?: string
-  localPort?: number
+  awsSecret: string
+  awsRegion: string
+  localPort: number
 }
 
 async function loadFromEnv() {
@@ -43,27 +45,45 @@ async function run(props: Props) {
 
 export default command<Props>('configure')
   .description('Configure environment for this project')
+
+  // Positional argument with prompt fallback
   .argument(input('name').description('Project name').string().prompt())
+
+  // Required string with choices, default, and prompt
   .option(
     input('environment')
-      .description('Environment')
+      .description('Target environment')
       .string()
       .required()
-      .choices(ENVIRONMENTS)
+      .choices([Environment.Local, Environment.Dev, Environment.Prod])
       .default(Environment.Dev)
       .prompt(),
   )
-  .option(input('cloud').description('Cloud provider').string().choices(CLOUD_PROVIDER))
-  .option(input('awsAccountId').description('AWS account id').string().prompt())
-  .option(input('awsAccessKey').description('AWS account access key').string())
-  .option(input('awsSecret').description('AWS account access secret').string())
+
+  // String with choices (no prompt — CLI-only)
+  .option(
+    input('cloud')
+      .description('Cloud provider')
+      .string()
+      .choices([CloudProvider.Aws, CloudProvider.GCloud, CloudProvider.Azure]),
+  )
+
+  // String options with prompt fallback
+  .option(input('awsAccountId').description('AWS account ID').string().prompt())
+  .option(input('awsAccessKey').description('AWS access key').string())
+  .option(input('awsSecret').description('AWS secret key').string())
   .option(input('awsRegion').description('AWS region').string())
+
+  // Number with choices and prompt
   .option(
     input('localPort')
-      .description('Local port for starting up the service')
+      .description('Local port for the service')
       .number()
-      .choices([4000, 4001, 4002])
+      .choices([3000, 4000, 4001, 4002, 8080])
       .prompt(),
   )
+
+  // Async config loader — pre-fills values from env.json
   .load(loadFromEnv)
+
   .handle(run)

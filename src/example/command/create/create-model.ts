@@ -1,14 +1,16 @@
 import { command, input } from '../../..'
 
-enum Type {
-  ts = 'ts',
-  js = 'js',
+// Demonstrates: a leaf subcommand with argument, choices, and boolean flag.
+
+enum Language {
+  TypeScript = 'ts',
+  JavaScript = 'js',
 }
 
 interface Props {
   name: string
-  type?: Type
-  dryRun?: boolean
+  type: Language
+  dryRun: boolean
 }
 
 async function run(props: Props) {
@@ -18,5 +20,11 @@ async function run(props: Props) {
 export default command<Props>('model')
   .description('Create a model')
   .argument(input('name').description('Name of the model').string().required())
-  .option(input('type').description('Type of the model').string().choices([Type.ts, Type.js]))
+  .option(
+    input('type')
+      .description('Language type')
+      .string()
+      .choices([Language.TypeScript, Language.JavaScript]),
+  )
+  .option(input('dryRun').description('Preview without creating files'))
   .handle(run)

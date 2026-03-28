@@ -1,14 +1,10 @@
 import { command, input } from '../../..'
 
-enum Type {
-  ts = 'ts',
-  js = 'js',
-}
+// Demonstrates: a subcommand with number option and default value.
 
 interface Props {
   name: string
-  type?: Type
-  dryRun?: boolean
+  maxConnections: number
 }
 
 async function run(props: Props) {
@@ -17,6 +13,6 @@ async function run(props: Props) {
 
 export default command<Props>('repository')
   .description('Create a repository')
-  .argument(input('name').description('Name of the model').string().required())
-  .option(input('type').description('Type of the model').string().choices([Type.ts, Type.js]))
+  .argument(input('name').description('Name of the repository').string().required())
+  .option(input('maxConnections').description('Max DB connections').number().default(10))
   .handle(run)
