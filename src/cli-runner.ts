@@ -33,8 +33,9 @@ function parseValue(
   switch (type) {
     case InputType.String:
       if (input.isMultiSelect && choices?.length) {
-        const values = typeof value === 'string' ? value.split(',').map(v => v.trim()) : [value]
-        const invalid = values.filter(v => !choices.includes(v))
+        const values: string[] =
+          typeof value === 'string' ? value.split(',').map(v => v.trim()) : [String(value)]
+        const invalid = values.filter(v => !(choices as string[]).includes(v))
         if (invalid.length) {
           throw new CliError(
             `Invalid value "${invalid.join(', ')}" for the input "--${
