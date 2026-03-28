@@ -401,24 +401,28 @@ theme.symbols.ellipsis  // …
 
 ## Multi-Format Output
 
-Every command supports three output modes out of the box via built-in flags:
+Add `.format()` to any command to enable a `--format=<default|text|json>` option:
 
-| Flag     | Format | Use Case                          |
-| -------- | ------ | --------------------------------- |
-| _(none)_ | Rich   | Human-readable with colors & Ink  |
-| `--text` | Plain  | Pipe-friendly, no colors          |
-| `--json` | JSON   | Machine-readable, structured data |
-| `--doc`  | Docs   | Auto-generated markdown documentation |
+| Flag              | Format  | Use Case                          |
+| ----------------- | ------- | --------------------------------- |
+| _(none)_          | Default | Human-readable with colors & Ink  |
+| `--format=text`   | Plain   | Pipe-friendly, no colors          |
+| `--format=json`   | JSON    | Machine-readable, structured data |
+| `--doc`           | Docs    | Auto-generated markdown documentation |
 
 Use the `render()` function to support all three modes with a single call:
 
 ```typescript
 import { render } from 'clifer'
+import type { FormatProps } from 'clifer'
 
-const program = cli('status')
+interface Props extends FormatProps {}
+
+const program = cli<Props>('status')
+  .format()  // adds --format=<default|text|json>
   .handle(async (props) => {
     const data = { status: 'running', port: 3000 }
-    render(data, props, (data) => (
+    render(data, props.format, (data) => (
       <Card title="Server Status">
         <LabelValue label="Status" value={data.status} />
         <LabelValue label="Port" value={String(data.port)} />
@@ -428,10 +432,10 @@ const program = cli('status')
 ```
 
 ```bash
-$ status              # Rich Ink output
-$ status --text       # Plain text key-value pairs
-$ status --json       # {"status":"running","port":3000}
-$ status --doc        # Markdown documentation
+$ status                    # Default rich Ink output
+$ status --format=text      # Plain text key-value pairs
+$ status --format=json      # {"status":"running","port":3000}
+$ status --doc              # Markdown documentation
 ```
 
 ### Output Utilities
@@ -529,9 +533,13 @@ Every command automatically includes these flags:
 | ----------- | ----- | ------------------------------------------ |
 | `--help`    | `-h`  | Show auto-generated help screen            |
 | `--version` |       | Show version (when `.version()` is set)    |
-| `--json`    |       | Output as JSON                             |
-| `--text`    |       | Output as plain text                       |
 | `--doc`     |       | Generate markdown documentation            |
+
+When `.format()` is used, the following option is also available:
+
+| Flag                            | Description                                |
+| ------------------------------- | ------------------------------------------ |
+| `--format=<default\|text\|json>` | Output format (default: rich Ink rendering) |
 
 ## Help and Documentation
 
@@ -991,7 +999,7 @@ enum InputType {
   Boolean,
 }
 
-type OutputFormat = 'text' | 'json' | 'rich'
+type OutputFormat = 'default' | 'text' | 'json'
 ```
 
 ## Contributing
