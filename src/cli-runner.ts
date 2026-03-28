@@ -24,7 +24,7 @@ function toValues(value: string[]) {
 }
 
 function parseValue(
-  value: string | boolean,
+  value: string | boolean | string[],
   input: Input<any, any>,
   command: Command<any>,
   parentCommands: Command<any>[],
@@ -32,18 +32,23 @@ function parseValue(
   const { type, choices } = input
   switch (type) {
     case InputType.String:
-      if (input.isMultiSelect && choices?.length) {
-        const values: string[] =
-          typeof value === 'string' ? value.split(',').map(v => v.trim()) : [String(value)]
-        const invalid = values.filter(v => !(choices as string[]).includes(v))
-        if (invalid.length) {
-          throw new CliError(
-            `Invalid value "${invalid.join(', ')}" for the input "--${
-              input.name as string
-            }". You must provide ${toValues(choices)}`,
-            command,
-            parentCommands,
-          )
+      if (input.isMultiSelect) {
+        const values: string[] = Array.isArray(value)
+          ? value
+          : typeof value === 'string'
+          ? value.split(',').map(v => v.trim())
+          : [String(value)]
+        if (choices?.length) {
+          const invalid = values.filter(v => !(choices as string[]).includes(v))
+          if (invalid.length) {
+            throw new CliError(
+              `Invalid value "${invalid.join(', ')}" for the input "--${
+                input.name as string
+              }". You must provide ${toValues(choices)}`,
+              command,
+              parentCommands,
+            )
+          }
         }
         return values
       }
