@@ -1,7 +1,7 @@
 import { Box, render } from 'ink'
 import React from 'react'
 
-export function renderOnce(element: React.ReactElement) {
+export async function renderOnce(element: React.ReactElement): Promise<void> {
   const wrapped = (
     <Box flexDirection='column' marginY={1} marginLeft={2}>
       {element}
@@ -9,5 +9,5 @@ export function renderOnce(element: React.ReactElement) {
   )
   const { unmount, waitUntilExit } = render(wrapped)
   setImmediate(() => unmount())
-  return waitUntilExit()
+  await waitUntilExit()
 }
