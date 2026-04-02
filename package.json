@@ -1,6 +1,6 @@
 {
   "name": "clifer",
-  "version": "1.10.0",
+  "version": "1.11.0",
   "description": "A lightweight, type-safe TypeScript library for building beautiful command-line interfaces with zero dependencies",
   "keywords": [
     "cli",
