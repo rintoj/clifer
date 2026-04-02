@@ -280,9 +280,9 @@ export function formatAsList(items: any[], fields?: string[]): string {
   return [header, separator, ...rows].join('\n')
 }
 
-// --- Unified render() dispatcher ---
+// --- Unified renderUI() dispatcher ---
 
-export function render<T>(
+export function renderUI<T>(
   data: T,
   format: OutputFormat,
   richFn: RichRenderer<T>,

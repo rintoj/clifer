@@ -410,10 +410,10 @@ Add `.format()` to any command to enable a `--format=<default|text|json>` option
 | `--format=json`   | JSON    | Machine-readable, structured data |
 | `--doc`           | Docs    | Auto-generated markdown documentation |
 
-Use the `render()` function to support all three modes with a single call:
+Use the `renderUI()` function to support all three modes with a single call:
 
 ```typescript
-import { render } from 'clifer'
+import { renderUI } from 'clifer'
 import type { FormatProps } from 'clifer'
 
 interface Props extends FormatProps {}
@@ -422,7 +422,7 @@ const program = cli<Props>('status')
   .format()  // adds --format=<default|text|json>
   .handle(async (props) => {
     const data = { status: 'running', port: 3000 }
-    render(data, props.format, (data) => (
+    renderUI(data, props.format, (data) => (
       <Card title="Server Status">
         <LabelValue label="Status" value={data.status} />
         <LabelValue label="Port" value={String(data.port)} />
@@ -937,7 +937,7 @@ Configuration saved!
 
 | Function                        | Description                                 |
 | ------------------------------- | ------------------------------------------- |
-| `render(data, format, richFn)`  | Unified renderer (rich/text/json)           |
+| `renderUI(data, format, richFn)` | Unified renderer (rich/text/json)           |
 | `renderOnce(element)`           | Render an Ink component once and unmount    |
 | `printJson(data)`               | Print data as JSON                          |
 | `printText(data)`               | Print object as formatted key-value pairs   |
