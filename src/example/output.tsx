@@ -17,7 +17,7 @@ import {
   printMarkdown,
   printText,
   printTextList,
-  render,
+  renderUI,
   renderOnce,
   runCli,
 } from '..'
@@ -157,7 +157,7 @@ async function showUIComponents() {
 
 async function showRenderDispatcher(format: OutputFormat) {
   // render() automatically picks the right output based on --format flag
-  await render(deployInfo, format, data => <KeyValueTable title="Deploy Info" data={data} />)
+  await renderUI(deployInfo, format, data => <KeyValueTable title="Deploy Info" data={data} />)
 }
 
 // --- CliExpectedError example ---
