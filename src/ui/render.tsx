@@ -3,7 +3,7 @@ import React from 'react'
 
 export async function renderOnce(element: React.ReactElement): Promise<void> {
   const wrapped = (
-    <Box flexDirection='column' marginY={1} marginLeft={2}>
+    <Box flexDirection='column' marginTop={1} paddingLeft={1}>
       {element}
     </Box>
   )

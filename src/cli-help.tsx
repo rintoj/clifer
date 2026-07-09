@@ -340,7 +340,7 @@ function HelpView({
   let currentSection = ''
 
   return (
-    <Box flexDirection='column' paddingLeft={1}>
+    <Box flexDirection='column'>
       <Box gap={1}>
         <Text color={theme.colors.success} bold>
           {joinWithSpace(prefix ?? '', command.name ?? '')}
@@ -384,11 +384,8 @@ function HelpView({
 
 function CliErrorView({ message, commandText }: { message: string; commandText: string }) {
   return (
-    <Box flexDirection='column' paddingLeft={1}>
-      <Text color={theme.colors.error}>
-        {'\n'}Error: {message}
-        {'\n'}
-      </Text>
+    <Box flexDirection='column'>
+      <Text color={theme.colors.error}>Error: {message}</Text>
       <Text color={theme.colors.warning}>Run &quot;{commandText} --help&quot; to see help</Text>
     </Box>
   )
