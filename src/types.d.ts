@@ -1,3 +1,8 @@
+// Test-environment sniff: `typeof jest !== 'undefined'` is used to switch to
+// plain-text rendering under the test runner. Declared here so the guard
+// type-checks; `jest` is absent at runtime outside tests (typeof is safe).
+declare const jest: undefined | Record<string, unknown>
+
 declare module 'cardinal' {
   const cardinal: {
     highlight: (code: string, options?: any) => string

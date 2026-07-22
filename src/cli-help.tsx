@@ -384,7 +384,7 @@ function HelpView({
 
 function CliErrorView({ message, commandText }: { message: string; commandText: string }) {
   return (
-    <Box flexDirection='column'>
+    <Box flexDirection='column' gap={1}>
       <Text color={theme.colors.error}>Error: {message}</Text>
       <Text color={theme.colors.warning}>Run &quot;{commandText} --help&quot; to see help</Text>
     </Box>

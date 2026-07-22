@@ -104,7 +104,27 @@ function parseInput<P>(
   const currentArg = args[argIndex]
   const [option, value = true] = toOptionName(currentArg)
   const input = command.inputs[option]
-  if (!input) return undefined
+  if (!input) {
+    // Support negatable boolean flags: `--no-<name>` sets the boolean option
+    // `<name>` to false automatically, without needing an explicit definition.
+    const negatedMatch = /^no-(.+)$/.exec(option)
+    if (negatedMatch && value === true) {
+      const negatedInput = command.inputs[negatedMatch[1]]
+      if (negatedInput?.type === InputType.Boolean) {
+        return parseCommand(
+          command,
+          args,
+          argIndex + 1,
+          {
+            ...props,
+            [toCamelCase(negatedMatch[1])]: false,
+          },
+          parentCommands,
+        )
+      }
+    }
+    return undefined
+  }
   if (input.type !== InputType.Boolean && !/.+=.+/.test(currentArg)) {
     const nextValue = args[argIndex + 1]
     if (typeof nextValue === 'undefined' || /^--.*/.test(nextValue)) {
