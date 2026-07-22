@@ -513,9 +513,9 @@ describe('cli', () => {
 
       OPTIONS
 
-      --dry-run              Do a dry run
+      --dry-run              Do a dry run (use --no-dry-run to disable)
 
-      --sample               Sample input
+      --sample               Sample input (use --no-sample to disable)
 
       --instances=<number>   Number of instances
     `),

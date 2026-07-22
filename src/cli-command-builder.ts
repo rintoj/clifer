@@ -17,9 +17,11 @@ export function isCommandBuilder<T>(cmd: CommandOrBuilder<T>): cmd is CommandBui
   return cmd instanceof CommandBuilderBase
 }
 
+export const RESERVED_INPUT_NAMES = ['version', 'help', 'doc', 'json', 'text']
+
 export function allInputs<T>(cmd: Command<T>): Input<any, any>[] {
   return [...cmd.arguments, ...Object.values(cmd.inputs).filter(isInput)].filter(
-    i => !['version', 'help', 'doc', 'json', 'text'].includes(i.name as string),
+    i => !RESERVED_INPUT_NAMES.includes(i.name as string),
   ) as any
 }
 

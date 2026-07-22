@@ -62,7 +62,8 @@ describe('cli', () => {
 
         --instances=<number>      Number of instances
 
-        --dry-run                 Do not make changes but run in dry-run mode
+        --dry-run                 Do not make changes but run in dry-run mode (use --no-dry-run
+        to disable)
 
         COMMON
 
@@ -93,7 +94,8 @@ describe('cli', () => {
 
         --instances=<number>        Number of instances
 
-        --dry-run                   Do not make changes but run in dry-run mode
+        --dry-run                   Do not make changes but run in dry-run mode (use --no-dry-run
+        to disable)
 
         COMMON
 
@@ -184,7 +186,7 @@ describe('cli', () => {
 
         OPTIONS
 
-        --dry-run   Do a sample run
+        --dry-run   Do a sample run (use --no-dry-run to disable)
 
         COMMON
 
@@ -270,7 +272,7 @@ describe('cli', () => {
           '',
           'OPTIONS  ',
           '',
-          '--dry-run   Do a sample run       ',
+          '--dry-run   Do a sample run (use --no-dry-run to disable)',
           '',
           'COMMON   ',
           '',

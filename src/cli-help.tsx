@@ -1,5 +1,6 @@
 import { Box, Text } from 'ink'
 import React from 'react'
+import { RESERVED_INPUT_NAMES } from './cli-command-builder'
 import { type Command, type Input, InputType, isCommand, isInput, Kind } from './cli-types'
 import { renderOnce } from './ui/render'
 import { theme } from './ui/theme'
@@ -107,9 +108,18 @@ function toOptionType(input: Input<any, any>): string {
 }
 
 function toOptionHelp(input: Input<any, any>): string[] {
+  // Boolean options are negatable via a `--no-<name>` prefix, so advertise it
+  // in the description column to make the feature discoverable from help. The
+  // reserved flags (help/doc/version/...) are excluded — negating them is a no-op.
+  const negatableHint =
+    input.type === InputType.Boolean &&
+    !RESERVED_INPUT_NAMES.includes(input.name as string)
+      ? `(use --no-${input.name as string} to disable)`
+      : ''
+  const description = [input.description ?? '', negatableHint].filter(Boolean).join(' ')
   return [
     `--${input.name as string}${toOptionType(input)}${input.isRequired ? ' *' : ''}`,
-    input.description ?? '',
+    description,
   ]
 }
 
