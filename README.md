@@ -87,8 +87,9 @@ Clifer supports various input types with full TypeScript inference:
 // Number with default
 .option(input('port').description('Port number').number().default(3000))
 
-// Boolean flag
-.option(input('force').description('Force operation'))
+// Boolean flag — pass `--force` to enable, `--no-force` to disable
+.option(input('force').description('Force operation').default(true))
+// CLI: --force  →  true   |   --no-force  →  false
 
 // Single choice
 .option(input('env').string().choices(['dev', 'staging', 'prod']))
@@ -106,6 +107,37 @@ Clifer supports various input types with full TypeScript inference:
   return value
 }))
 ```
+
+## Negatable Boolean Flags
+
+Every boolean option is **automatically negatable** — no extra definition needed. For any boolean option `--name`, Clifer also accepts `--no-name` to set it to `false`:
+
+```typescript
+const program = cli<{ cache: boolean }>('build')
+  .option(input('cache').description('Use build cache').default(true))
+  .handle(({ cache }) => {
+    console.log(cache ? 'Using cache' : 'Cache disabled')
+  })
+
+// build            →  cache: true   (from the default)
+// build --cache    →  cache: true
+// build --no-cache →  cache: false
+```
+
+This makes it easy to override a boolean that defaults to `true`. The generated help advertises the negation form automatically:
+
+```
+OPTIONS
+
+--cache   Use build cache (use --no-cache to disable)
+```
+
+Notes:
+
+- Only applies to **boolean** options — `--no-service` on a string option is still an "Invalid option".
+- Use the bare form `--no-cache` (not `--no-cache=false`) to negate.
+- An option explicitly named `no-cache` takes precedence over the auto-negation of `cache`.
+- The built-in flags (`--help`, `--doc`, `--version`) are not advertised as negatable.
 
 ## Nested Commands
 
@@ -596,6 +628,7 @@ The help output uses these conventions:
 | `<name>`          | Required argument                 |
 | `[name]`          | Optional argument                 |
 | `--flag`          | Boolean flag                      |
+| `--no-flag`       | Negate a boolean flag (set to `false`) |
 | `--opt=<string>`  | String option                     |
 | `--opt=<number>`  | Number option                     |
 | `--opt=<a\|b\|c>` | Choice option                    |

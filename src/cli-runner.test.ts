@@ -109,6 +109,45 @@ describe('cli', () => {
     expect(run).toHaveBeenCalledWith({ dryRun: true })
   })
 
+  test('should negate a boolean option with a --no- prefix', async () => {
+    const run = jest.fn()
+    await runCli(
+      cli<any>('mycli')
+        .version('1.0')
+        .option(input('dryRun'))
+        .option(input('service').string())
+        .handle(run),
+      ['--no-dry-run', '--service', 'api'],
+    )
+    expect(run).toHaveBeenCalledWith({ dryRun: false, service: 'api' })
+  })
+
+  test('should let --no- override a default true boolean option', async () => {
+    const run = jest.fn()
+    await runCli(
+      cli<any>('mycli')
+        .version('1.0')
+        .option(input('test').default(true as any))
+        .handle(run),
+      ['--no-test'],
+    )
+    expect(run).toHaveBeenCalledWith({ test: false })
+  })
+
+  test('should not negate a non-boolean option with a --no- prefix', async () => {
+    const run = jest.fn()
+    console.error = jest.fn()
+    await runCli(
+      cli<any>('mycli')
+        .version('1.0')
+        .option(input('service').string())
+        .handle(run),
+      ['--no-service'],
+    )
+    expect(run).not.toHaveBeenCalled()
+    expect(console.error).toHaveBeenCalledWith('\nError: Invalid option "--no-service"\n')
+  })
+
   test('should throw an error if value for an option is missing', async () => {
     const run = jest.fn()
     console.error = jest.fn()
@@ -474,9 +513,9 @@ describe('cli', () => {
 
       OPTIONS
 
-      --dry-run              Do a dry run
+      --dry-run              Do a dry run (use --no-dry-run to disable)
 
-      --sample               Sample input
+      --sample               Sample input (use --no-sample to disable)
 
       --instances=<number>   Number of instances
     `),
